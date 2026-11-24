@@ -1,135 +1,1098 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#17231f"><title>Turno de Produção — Fábrica XLP</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2d343b">
+<title>Turno de Produção — Fábrica XLP</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#18241f;color:#fff;font-family:system-ui,Arial,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}
-#hud{position:fixed;inset:0;pointer-events:none}.top{display:flex;justify-content:space-between;align-items:flex-start;padding:12px;gap:8px}.brand,.coins,.missionBox,.objective,.dialog,.mapBtn{background:#182522eF;border:2px solid #657568;border-radius:12px;box-shadow:0 4px 14px #0005}.brand{padding:9px 13px;font-weight:1000;letter-spacing:.06em}.brand span{color:#f6cf70}.coins{padding:9px 13px;font-weight:900;color:#ffdc80}.missionBox{position:absolute;top:68px;left:12px;width:min(290px,46vw);padding:11px;max-height:48vh;overflow:auto;pointer-events:auto}.missionBox h3{margin:0 0 8px;color:#ffd778;font-size:15px}.mission{font-size:12px;line-height:1.3;padding:6px 4px;border-top:1px solid #65756888;color:#e8eee6}.mission.done{color:#a8d9a8;text-decoration:line-through}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#e9ae3d;margin-right:7px}.done .dot{background:#75c58a}.objective{position:absolute;left:50%;bottom:13px;transform:translateX(-50%);padding:10px 14px;width:min(470px,62vw);text-align:center}.objective b{display:block;color:#ffdb82;font-size:12px}.objective small{display:block;color:#e4e9df;font-size:11px;margin-top:3px}.dialog{position:absolute;left:50%;bottom:90px;transform:translateX(-50%);width:min(560px,88vw);padding:14px 16px;display:none;pointer-events:auto}.dialog.show{display:block}.dialog strong{color:#ffdb82}.dialog p{font-size:13px;line-height:1.45;margin:7px 0 12px}.dialog button,.action,.mapBtn{border:0;background:#f1c76e;color:#263127;font-weight:950;border-radius:9px;padding:10px 15px}.dialog button{float:right}.action{position:absolute;right:16px;bottom:18px;pointer-events:auto;min-width:95px;min-height:56px;border:3px solid #fff5;box-shadow:0 4px 12px #0006}.mapBtn{position:absolute;right:12px;top:67px;pointer-events:auto;background:#263b34;color:#fff;border:2px solid #718477}.pad{position:absolute;left:12px;bottom:14px;display:grid;grid-template-columns:46px 46px 46px;grid-template-rows:43px 43px 43px;gap:4px;pointer-events:auto}.pad button{border:1px solid #a7b5a0;border-radius:10px;background:#21342fe8;color:white;font-size:20px;touch-action:none}.pad .up{grid-column:2}.pad .left{grid-column:1;grid-row:2}.pad .down{grid-column:2;grid-row:2}.pad .right{grid-column:3;grid-row:2}.pad .down{grid-row:3}.pad button:active{background:#526d59}
-#startScreen{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,#587354,#172b27 70%);padding:18px;z-index:5}.card{width:min(540px,94vw);text-align:center;padding:32px 24px;background:#172720ed;border:2px solid #9eaa82;border-radius:22px;box-shadow:0 25px 80px #0009}.factoryIcon{font-size:65px}.kicker{font-size:11px;letter-spacing:.2em;color:#f4d17d;font-weight:900}.card h1{font-size:clamp(32px,7vw,54px);line-height:1;margin:12px 0;color:#ffdc83;text-shadow:0 4px #72552b}.card p{color:#e0e8dc;line-height:1.5;font-size:14px}.card button{background:#f2c86f;color:#263127;border:0;border-radius:10px;padding:15px 35px;font-weight:1000;font-size:16px}.hidden{display:none!important}
-@media(max-width:650px){.top{padding:7px}.brand,.coins{font-size:11px;padding:7px 9px}.missionBox{top:54px;left:7px;width:190px;max-height:38vh;padding:8px}.missionBox h3{font-size:12px}.mission{font-size:10px;padding:5px 2px}.mapBtn{top:54px;right:7px;padding:7px 9px;font-size:11px}.objective{bottom:8px;left:50%;width:calc(100vw - 150px);margin-left:0;padding:7px 8px}.objective b{font-size:10px}.objective small{font-size:9px}.action{right:8px;bottom:12px;min-width:74px;min-height:50px;padding:8px;font-size:12px}.pad{left:7px;bottom:8px;grid-template-columns:39px 39px 39px;grid-template-rows:36px 36px 36px;gap:3px}.pad button{font-size:17px}.dialog{bottom:78px;padding:11px}.dialog p{font-size:12px}}
-</style></head>
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  html, body {
+    margin: 0; width: 100%; height: 100%; overflow: hidden;
+    background: #2b3036; color: #fff;
+    font-family: 'Segoe UI', Roboto, system-ui, Arial, sans-serif;
+    touch-action: none;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  /* HUD SUPERIOR E PAINÉIS ESTILO REFERÊNCIA */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+
+  .missionBox {
+    position: absolute; top: 14px; left: 14px;
+    width: min(295px, 46vw);
+    background: rgba(38, 36, 35, 0.88);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    overflow: hidden;
+    pointer-events: auto;
+    backdrop-filter: blur(4px);
+  }
+  .missionHeader {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: rgba(25, 24, 24, 0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .missionBadge {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(180deg, #ffcf48, #e69d18);
+    border: 2px solid #473210;
+    color: #2b1d07; font-weight: 900; font-size: 17px;
+    display: grid; place-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .missionHeader h3 {
+    margin: 0; font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.2px;
+  }
+  #missions { padding: 6px 12px 10px; max-height: 44vh; overflow-y: auto; }
+  .mission {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; line-height: 1.35;
+    padding: 5px 2px; color: #f2f2f0;
+  }
+  .mission.done { color: #9cd49c; text-decoration: line-through; opacity: 0.8; }
+  .dot {
+    flex-shrink: 0; width: 11px; height: 11px; margin-top: 3px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe074, #e39b19);
+    border: 1.5px solid #3c2b0e;
+  }
+  .done .dot { background: #6fd184; border-color: #1f4d29; }
+
+  /* MOEDAS TOPO DIREITO */
+  .coinsWrap {
+    position: absolute; top: 14px; right: 14px;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(34, 34, 36, 0.88);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 5px 16px 5px 7px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  }
+  .coinIcon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffe678, #e09619);
+    border: 2px solid #593b0b;
+    display: grid; place-items: center;
+    font-weight: 900; font-size: 14px; color: #7a4e08;
+  }
+  .coinsText {
+    font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.5px;
+  }
+
+  /* CORAÇÕES INFERIOR ESQUERDO */
+  .heartsBar {
+    position: absolute; left: 16px; bottom: 14px;
+    display: flex; gap: 4px;
+    background: rgba(25, 26, 28, 0.65);
+    padding: 5px 10px; border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .heart {
+    font-size: 18px;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.7));
+  }
+
+  /* BOTÃO MAPA INFERIOR DIREITO */
+  .mapBtn {
+    position: absolute; right: 16px; bottom: 14px;
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(42, 43, 46, 0.92);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.24);
+    border-radius: 12px;
+    padding: 9px 18px;
+    font-size: 15px; font-weight: 800;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.45);
+    cursor: pointer;
+  }
+  .mapBtn:active { transform: scale(0.96); }
+
+  /* OBJETIVO CENTRAL INFERIOR */
+  .objective {
+    position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+    background: rgba(34, 34, 36, 0.88);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    padding: 8px 16px;
+    width: min(440px, 52vw);
+    text-align: center;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.4);
+  }
+  .objective b { display: block; color: #ffd966; font-size: 13px; }
+  .objective small { display: block; color: #e2e4e8; font-size: 11px; margin-top: 2px; }
+
+  /* DIÁLOGO */
+  .dialog {
+    position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%);
+    width: min(540px, 88vw);
+    background: rgba(32, 33, 36, 0.95);
+    border: 2px solid #ffd460;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: none; pointer-events: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.65);
+  }
+  .dialog.show { display: block; }
+  .dialog strong { color: #ffd460; font-size: 15px; }
+  .dialog p { font-size: 13.5px; line-height: 1.45; margin: 8px 0 12px; color: #f4f4f4; }
+  .dialog button {
+    float: right; border: 2px solid #4a350c;
+    background: linear-gradient(180deg, #ffcf4d, #e59e1c);
+    color: #241905; font-weight: 900; border-radius: 8px;
+    padding: 8px 16px; cursor: pointer;
+  }
+
+  /* CONTROLES TOUCH / AÇÃO */
+  .action {
+    position: absolute; right: 16px; bottom: 66px;
+    pointer-events: auto;
+    min-width: 88px; min-height: 50px;
+    background: linear-gradient(180deg, #ffcf4d, #e39b17);
+    color: #261b06; font-weight: 900; font-size: 13px;
+    border: 2.5px solid #3a2a0b; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+  .action:active { transform: scale(0.95); }
+
+  .pad {
+    position: absolute; left: 16px; bottom: 56px;
+    display: grid;
+    grid-template-columns: 42px 42px 42px;
+    grid-template-rows: 38px 38px 38px;
+    gap: 3px; pointer-events: auto; opacity: 0.78;
+  }
+  .pad button {
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 9px;
+    background: rgba(35, 37, 41, 0.85);
+    color: #fff; font-size: 16px; touch-action: none;
+  }
+  .pad .up { grid-column: 2; }
+  .pad .left { grid-column: 1; grid-row: 2; }
+  .pad .right { grid-column: 3; grid-row: 2; }
+  .pad .down { grid-column: 2; grid-row: 3; }
+  .pad button:active { background: #e8a728; color: #221704; }
+
+  /* TELA INICIAL */
+  #startScreen {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 40%, #4b5663, #23272c 75%);
+    padding: 18px; z-index: 10;
+  }
+  .card {
+    width: min(520px, 94vw); text-align: center; padding: 32px 24px;
+    background: rgba(34, 36, 40, 0.94);
+    border: 2.5px solid #ffd15c; border-radius: 20px;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.75);
+  }
+  .factoryIcon { font-size: 62px; }
+  .kicker { font-size: 11px; letter-spacing: .2em; color: #ffd15c; font-weight: 900; }
+  .card h1 {
+    font-size: clamp(32px, 7vw, 52px); line-height: 1.02; margin: 12px 0;
+    color: #ffd966; text-shadow: 0 4px #4d380e;
+  }
+  .card p { color: #e2e5ea; line-height: 1.5; font-size: 14px; }
+  .card button {
+    background: linear-gradient(180deg, #ffcf4d, #e39b17);
+    color: #261b06; border: 2.5px solid #3f2d0b; border-radius: 12px;
+    padding: 14px 34px; font-weight: 900; font-size: 16px; cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.45);
+  }
+  .hidden { display: none !important; }
+
+  @media (max-width: 720px) {
+    .missionBox { width: 205px; top: 8px; left: 8px; }
+    .missionHeader { padding: 7px 10px; }
+    .missionHeader h3 { font-size: 13px; }
+    .mission { font-size: 10.5px; }
+    .coinsWrap { top: 8px; right: 8px; padding: 4px 11px 4px 5px; }
+    .coinsText { font-size: 14px; }
+    .objective { width: calc(100vw - 230px); bottom: 8px; padding: 6px 8px; }
+    .objective b { font-size: 11px; }
+    .objective small { font-size: 9.5px; }
+    .heartsBar { left: 8px; bottom: 8px; padding: 3px 7px; }
+    .heart { font-size: 13px; }
+    .mapBtn { right: 8px; bottom: 8px; padding: 7px 11px; font-size: 12px; }
+    .action { right: 8px; bottom: 52px; min-width: 72px; min-height: 44px; font-size: 11px; }
+    .pad { left: 8px; bottom: 42px; grid-template-columns: 35px 35px 35px; grid-template-rows: 32px 32px 32px; }
+  }
+</style>
+</head>
 <body>
 <canvas id="game"></canvas>
+
 <div id="hud" class="hidden">
- <div class="top"><div class="brand">🏭 TURNO <span>DE PRODUÇÃO</span><br><small style="font-size:9px;color:#d3ddce">XLP · SENAI</small></div><div class="coins">🪙 <span id="coins">0225</span></div></div>
- <div class="missionBox"><h3>❗ MISSÕES</h3><div id="missions"></div></div>
- <button class="mapBtn" id="mapBtn">📍 MAPA</button>
- <div class="objective"><b id="objective">Fale com o Supervisor</b><small id="subobjective">Aproxime-se do NPC e toque em AÇÃO.</small></div>
- <div class="dialog" id="dialog"><strong id="speaker">Supervisor</strong><p id="speech"></p><button id="closeDialog">CONTINUAR</button></div>
- <div class="pad">
-  <button class="up" data-dir="up">▲</button><button class="left" data-dir="left">◀</button><button class="down" data-dir="down">▼</button><button class="right" data-dir="right">▶</button>
- </div>
- <button class="action" id="action">AÇÃO<br> E</button>
+  <div class="missionBox" id="missionBox">
+    <div class="missionHeader">
+      <div class="missionBadge">!</div>
+      <h3>Missões</h3>
+    </div>
+    <div id="missions"></div>
+  </div>
+
+  <div class="coinsWrap">
+    <div class="coinIcon">1</div>
+    <span class="coinsText" id="coins">0225</span>
+  </div>
+
+  <div class="heartsBar" aria-label="Energia">
+    <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+    <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+  </div>
+
+  <div class="objective">
+    <b id="objective">Converse com o Supervisor</b>
+    <small id="subobjective">Aproxime-se do NPC e toque em AÇÃO.</small>
+  </div>
+
+  <div class="dialog" id="dialog">
+    <strong id="speaker">Supervisor</strong>
+    <p id="speech"></p>
+    <button id="closeDialog">CONTINUAR</button>
+  </div>
+
+  <div class="pad">
+    <button class="up" data-dir="up">▲</button>
+    <button class="left" data-dir="left">◀</button>
+    <button class="down" data-dir="down">▼</button>
+    <button class="right" data-dir="right">▶</button>
+  </div>
+
+  <button class="action" id="action">AÇÃO<br>[E]</button>
+  <button class="mapBtn" id="mapBtn">📍 Mapa</button>
 </div>
-<div id="startScreen"><div class="card"><div class="factoryIcon">🏭</div><div class="kicker">SIMULADOR INDUSTRIAL · SENAI</div><h1>TURNO DE<br>PRODUÇÃO</h1><p>Explore a fábrica XLP, converse com a equipe e complete missões de produção, reciclagem, manutenção e expedição.</p><p><b>XLP - SENAI</b></p><button id="start">ENTRAR NA FÁBRICA ▶</button></div></div>
+
+<div id="startScreen">
+  <div class="card">
+    <div class="factoryIcon">🏭</div>
+    <div class="kicker">SIMULADOR INDUSTRIAL · SENAI</div>
+    <h1>TURNO DE<br>PRODUÇÃO</h1>
+    <p>Explore a fábrica XLP, converse com a equipe e complete missões de produção, reciclagem, manutenção e expedição.</p>
+    <p><b>XLP - SENAI</b></p>
+    <button id="start">ENTRAR NA FÁBRICA ▶</button>
+  </div>
+</div>
+
 <script>
-(()=>{
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-let vw=innerWidth,vh=innerHeight,dpr=Math.min(devicePixelRatio||1,2);
-function resize(){vw=innerWidth;vh=innerHeight;canvas.width=vw*dpr;canvas.height=vh*dpr;canvas.style.width=vw+'px';canvas.style.height=vh+'px'}addEventListener('resize',resize);resize();
-const W=2600,H=1800,player={x:1250,y:930,speed:250,dir:'down',walk:0};
-let cam={x:0,y:0},keys={},coins=225,dialogue=null,missionIndex=0,inject=0,packed=0,borra=false,recycle=false,reject=false,maintenance=false,delivered=false,started=false;
-const missions=[
- {title:'Converse com o Supervisor',desc:'Encontre o supervisor perto da entrada.'},
- {title:'Produza 3 peças na Injetora 01',desc:'Use a máquina de injeção três vezes.'},
- {title:'Leve a borra ao triturador',desc:'Recolha a borra e leve ao setor de moagem.'},
- {title:'Separe os resíduos corretamente',desc:'Deposite recicláveis e rejeitos nas lixeiras certas.'},
- {title:'Embale 10 peças',desc:'Use a estação de embalagem até completar 10 peças.'},
- {title:'Fale com o Técnico de Manutenção',desc:'Converse com o técnico no setor de manutenção.'},
- {title:'Envie o lote para expedição',desc:'Converse com o responsável na doca.'},
- {title:'Conclua o turno com o Supervisor',desc:'Volte à entrada e finalize seu turno.'}
-];
-const npcs=[
- {id:'supervisor',name:'Supervisor Marcos',x:1200,y:470,emoji:'👨🏻‍💼',color:'#355c8c',lines:['Bem-vindo à XLP - SENAI! Hoje você vai acompanhar um turno completo.','Sua primeira tarefa é produzir três peças na Injetora 01. Depois, cuide da borra, dos resíduos e da expedição.','Excelente trabalho! O turno foi concluído. Você ajudou a equipe a manter a produção organizada.']},
- {id:'operator',name:'Operadora Bianca',x:790,y:820,emoji:'👩🏽‍🏭',color:'#a65b48',lines:['Oi! Aqui fazemos a inspeção visual das peças. Observe rebarbas, marcas e defeitos antes de aprovar um lote.','Dica: qualidade vem antes da quantidade.']},
- {id:'technician',name:'Técnico Paulo',x:430,y:1300,emoji:'👨🏽‍🔧',color:'#386f9a',lines:['Sou o técnico de manutenção. Antes de operar, confira proteções, sensores e sinalização. Nunca tente ajustar uma máquina em movimento.','Manutenção preventiva evita paradas e protege todo mundo.']},
- {id:'warehouse',name:'Almoxarife Júlia',x:2050,y:1120,emoji:'👩🏻‍🏭',color:'#46816b',lines:['Recebemos caixas, etiquetas e materiais de embalagem por aqui. Confira sempre a identificação do lote.','Material organizado facilita o trabalho de toda a equipe.']},
- {id:'quality',name:'Inspetor André',x:1650,y:520,emoji:'🧑🏻‍🔬',color:'#7b5c9c',lines:['Amostras aprovadas? Registre o resultado e mantenha o lote identificado.','Um bom operador acompanha o processo e comunica qualquer desvio.']},
- {id:'shipping',name:'Expedição Carla',x:2240,y:1480,emoji:'👩🏽‍💼',color:'#a17b38',lines:['A doca está pronta para receber o lote. Confira as caixas e confirme a entrega.','Lote recebido! Obrigada por manter tudo identificado.']}
-];
-const stations=[
- {id:'inject',name:'INJETORA 01',x:1770,y:820,w:300,h:190,type:'machine'},
- {id:'grinder',name:'TRITURADOR',x:2120,y:560,w:230,h:150,type:'machine'},
- {id:'recycle',name:'RECICLÁVEIS',x:1580,y:1220,w:95,h:120,type:'bin',color:'#3f986e'},
- {id:'reject',name:'REJEITOS',x:1700,y:1220,w:95,h:120,type:'bin',color:'#b45c4c'},
- {id:'pack',name:'EMBALAGEM',x:1980,y:1260,w:260,h:155,type:'belt'},
- {id:'dock',name:'DOCA 02',x:2240,y:1590,w:280,h:130,type:'dock'},
- {id:'scrap',name:'TAMBOR DE BORRA',x:1390,y:1030,w:100,h:120,type:'drum'},
- {id:'maint',name:'BANCADA TÉCNICA',x:360,y:1480,w:260,h:150,type:'bench'}
-];
-function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=4;ctx.stroke()}}
-function text(t,x,y,size=18,color='#f7f2dc',align='center',weight='800'){ctx.fillStyle=color;ctx.font=`${weight} ${size}px system-ui`;ctx.textAlign=align;ctx.fillText(t,x,y)}
-function building(x,y,w,h,title,sub,color='#d5c6a0'){rounded(x,y,w,h,16,color,'#8b8065');rounded(x+12,y+12,w-24,38,8,'#59665b','#34483c');text(title,x+w/2,y+38,19,'#fff4d2');text(sub,x+w/2,y+h-17,12,'#3c4637')}
-function drawFactory(){
- ctx.fillStyle='#9ca96c';ctx.fillRect(0,0,W,H);
- // outer walls and interior floor
- rounded(70,80,2460,1640,30,'#b9b18b','#6c7056');
- rounded(105,115,2390,1570,22,'#c9c2a5','#817b62');
- // tile floor
- ctx.save();ctx.strokeStyle='#aaa58c';ctx.lineWidth=2;for(let x=120;x<2490;x+=100){ctx.beginPath();ctx.moveTo(x,125);ctx.lineTo(x,1675);ctx.stroke()}for(let y=130;y<1680;y+=90){ctx.beginPath();ctx.moveTo(110,y);ctx.lineTo(2490,y);ctx.stroke()}ctx.restore();
- // yellow walking lanes
- ctx.strokeStyle='#e8b94f';ctx.lineWidth=15;ctx.setLineDash([35,18]);ctx.beginPath();ctx.moveTo(180,950);ctx.lineTo(2380,950);ctx.moveTo(1250,180);ctx.lineTo(1250,1600);ctx.stroke();ctx.setLineDash([]);
- // areas
- building(170,160,500,280,'ESCRITÓRIO','SUPERVISÃO · PCP','#d7c9a8');
- building(730,160,420,280,'CONTROLE DE QUALIDADE','INSPEÇÃO','#d7c9a8');
- building(1380,160,520,280,'PRODUÇÃO','INJETORAS 01–04','#d7c9a8');
- building(1980,160,420,280,'MOAGEM','REAPROVEITAMENTO','#d7c9a8');
- building(170,1190,500,370,'MANUTENÇÃO','FERRAMENTAS E PEÇAS','#c7bea1');
- building(730,1190,420,370,'REFEITÓRIO','PAUSA DOS OPERADORES','#c7bea1');
- building(1380,1190,470,370,'COLETA SELETIVA','RECICLÁVEIS E REJEITOS','#c7bea1');
- building(1900,1190,500,370,'EXPEDIÇÃO','EMBALAGEM E DOCA','#c7bea1');
- // windows / details
- for(let x of [230,330,430,530,790,890,990,1450,1550,1650,2050,2150,2250]){rounded(x,205,62,85,7,'#8db5bd','#586f70');rounded(x+8,213,46,69,4,'#b6d6d4')}
- // safety stripes at machine zones
- rounded(1430,540,900,520,22,'#b8b39d','#737c68');
- for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#d9ad43':'#303d36';ctx.save();ctx.translate(1450+i*72,540);ctx.rotate(-.45);ctx.fillRect(0,0,26,18);ctx.restore()}
- text('ÁREA DE PRODUÇÃO',1880,585,20,'#425047');
- // shelves
- for(let y of [610,730,850]){rounded(180,y,420,30,5,'#7a5540','#493c31');for(let i=0;i<6;i++)rounded(195+i*65,y-45,48,40,4,'#b78c50','#705338')}
- for(let y of [600,710,820]){rounded(750,y,330,25,5,'#7a5540','#493c31');for(let i=0;i<5;i++)rounded(765+i*62,y-39,45,34,4,'#91a17a','#53664d')}
- // conveyor
- rounded(1900,1050,470,60,10,'#4e5d58','#263b35');for(let x=1920;x<2350;x+=45){ctx.fillStyle='#a8a99b';ctx.beginPath();ctx.arc(x,1080,13,0,Math.PI*2);ctx.fill()}
- // pallets and crates
- for(let [x,y] of [[780,1010],[900,1010],[2150,850],[2260,850],[1050,620]]){rounded(x,y,90,70,6,'#9b7041','#65482e');for(let i=0;i<2;i++){ctx.strokeStyle='#d9b77b';ctx.beginPath();ctx.moveTo(x+8,y+10+i*25);ctx.lineTo(x+82,y+10+i*25);ctx.stroke()}}
- // signs
- text('XLP - SENAI',1280,95,30,'#fff0c1');
-}
-function drawStation(s){
- const x=s.x,y=s.y;
- if(s.type==='machine'){rounded(x-s.w/2,y-s.h/2,s.w,s.h,18,'#326b9e','#193e5c');rounded(x-s.w/2+20,y-s.h/2+20,s.w-40,70,9,'#263a48','#a8bdc4');rounded(x-48,y+20,96,42,7,'#91a7a2','#d0d7bd');text(s.name,x,y+s.h/2-12,17,'#fff')}
- if(s.type==='bin'){rounded(x-s.w/2,y-s.h/2,s.w,s.h,12,s.color,'#e4e2c9');text('♻',x,y+8,35);text(s.name,x,y+s.h/2+22,12)}
- if(s.type==='belt'){rounded(x-s.w/2,y-s.h/2,s.w,s.h,12,'#687b70','#344a40');for(let i=0;i<5;i++)rounded(x-s.w/2+15+i*48,y-35,38,50,5,'#b88b4f','#705535');text(s.name,x,y+s.h/2+22,15)}
- if(s.type==='dock'){rounded(x-s.w/2,y-s.h/2,s.w,s.h,12,'#8c9a8d','#536b5c');rounded(x-95,y-35,190,70,8,'#354e50','#c3d1b9');text(s.name,x,y+8,22)}
- if(s.type==='drum'){rounded(x-40,y-55,80,110,15,'#6b856f','#d1d5b7');text('BORRA',x,y+5,14);text('PLÁSTICA',x,y+25,10)}
- if(s.type==='bench'){rounded(x-s.w/2,y-s.h/2,s.w,s.h,12,'#657d88','#2f4c56');text(s.name,x,y+7,16)}
-}
-function drawNpc(n){ctx.save();ctx.translate(n.x,n.y);ctx.fillStyle='#0004';ctx.beginPath();ctx.ellipse(0,20,27,9,0,0,Math.PI*2);ctx.fill();rounded(-22,-30,44,48,12,n.color,'#283a32');ctx.beginPath();ctx.arc(0,-43,18,0,Math.PI*2);ctx.fillStyle='#c98f6a';ctx.fill();text(n.emoji,0,-34,25);rounded(-35,-92,70,24,8,'#fff3d7','#75684f');text(n.name.split(' ')[0],0,-75,11,'#344239');ctx.restore()}
-function drawPlayer(){ctx.save();ctx.translate(player.x,player.y);ctx.fillStyle='#0004';ctx.beginPath();ctx.ellipse(0,20,25,9,0,0,Math.PI*2);ctx.fill();rounded(-20,-29,40,48,10,'#d6c9a7','#4c5545');ctx.beginPath();ctx.arc(0,-43,18,0,Math.PI*2);ctx.fillStyle='#c98e6c';ctx.fill();ctx.fillStyle='#4b3025';ctx.beginPath();ctx.arc(0,-49,18,Math.PI,Math.PI*2);ctx.fill();text('👷',0,-35,22);ctx.restore()}
-function nearest(){let best=null,dist=1e9;for(const n of npcs){let d=Math.hypot(n.x-player.x,n.y-player.y);if(d<dist){dist=d;best={kind:'npc',obj:n,d}}}for(const s of stations){let d=Math.hypot(s.x-player.x,s.y-player.y);if(d<dist){dist=d;best={kind:'station',obj:s,d}}}return best&&best.d<115?best:null}
-function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,vw,vh);let scale=Math.min(vw/1100,vh/700);let viewW=vw/scale,viewH=vh/scale;cam.x=Math.max(0,Math.min(W-viewW,player.x-viewW/2));cam.y=Math.max(0,Math.min(H-viewH,player.y-viewH/2));ctx.scale(dpr*scale,dpr*scale);ctx.translate(-cam.x,-cam.y);drawFactory();stations.forEach(drawStation);npcs.forEach(drawNpc);drawPlayer();let near=nearest();if(near){ctx.fillStyle='#fff2a8';ctx.beginPath();ctx.arc(player.x,player.y-100,18,0,Math.PI*2);ctx.fill();text('!',player.x,player.y-93,22,'#34412f')} }
-function updateMissions(){document.getElementById('missions').innerHTML=missions.map((m,i)=>`<div class="mission ${i<missionIndex?'done':''}"><span class="dot"></span>${m.title}${i===missionIndex?' ◀':''}</div>`).join('');let m=missions[Math.min(missionIndex,missions.length-1)];document.getElementById('objective').textContent=missionIndex>=missions.length?'Turno concluído!':m.title;document.getElementById('subobjective').textContent=missionIndex>=missions.length?'Parabéns! Você completou todas as missões.':m.desc;document.getElementById('coins').textContent=String(coins).padStart(4,'0')}
-function say(n,txt){dialogue={npc:n};document.getElementById('speaker').textContent=n.name;document.getElementById('speech').textContent=txt;document.getElementById('dialog').classList.add('show')}
-function closeDialog(){document.getElementById('dialog').classList.remove('show');dialogue=null}
-function interact(){if(!started)return;if(dialogue){closeDialog();return}let near=nearest();if(!near){return}
- if(near.kind==='npc'){let n=near.obj;let line=n.lines[0];if(n.id==='supervisor'&&missionIndex===0){missionIndex++;line=n.lines[0]+' '+n.lines[1];coins+=10;updateMissions()}else if(n.id==='technician'&&missionIndex===5){missionIndex++;maintenance=true;line=n.lines[0]+' '+n.lines[1];coins+=20;updateMissions()}else if(n.id==='shipping'&&missionIndex===6){missionIndex++;delivered=true;line=n.lines[0]+' '+n.lines[1];coins+=30;updateMissions()}else if(n.id==='supervisor'&&missionIndex===7){missionIndex++;line=n.lines[2];coins+=50;updateMissions()}else if(n.id==='operator'&&missionIndex===1){line=n.lines[0]}else if(n.id==='quality'&&missionIndex>=2){line=n.lines[0]}else if(n.id==='warehouse'){line=n.lines[0]}say(n,line);return}
- const s=near.obj;
- if(s.id==='inject'&&missionIndex===1){inject++;coins+=5;if(inject>=3){missionIndex++;say({name:'Sistema'},'Três peças produzidas! Agora recolha a borra e leve ao triturador.');}else say({name:'Injetora 01'},`Peça produzida: ${inject}/3. Continue até completar o lote.`)}
- else if(s.id==='scrap'&&missionIndex===2&&!borra){borra=true;say({name:'Tambor de borra'},'Borra recolhida e identificada. Agora leve o material ao triturador.')}
- else if(s.id==='grinder'&&missionIndex===2&&borra){missionIndex++;coins+=15;say({name:'Triturador'},'Borra triturada e armazenada para reaproveitamento. Agora separe os resíduos.')}
- else if(s.id==='recycle'&&missionIndex===3&&!recycle){recycle=true;say({name:'Coleta seletiva'},'Recicláveis separados corretamente. Agora coloque os rejeitos no recipiente certo.')}
- else if(s.id==='reject'&&missionIndex===3&&recycle&&!reject){reject=true;missionIndex++;coins+=15;say({name:'Coleta seletiva'},'Separação concluída! Siga para a estação de embalagem.')}
- else if(s.id==='pack'&&missionIndex===4){packed=Math.min(10,packed+2);coins+=2;if(packed>=10){missionIndex++;say({name:'Embalagem'},'Dez peças embaladas e identificadas! Agora fale com o técnico de manutenção.')}else say({name:'Embalagem'},`Peças embaladas: ${packed}/10.`)}
- else if(s.id==='maint'&&missionIndex===5){say({name:'Bancada técnica'},'Área de manutenção: ferramentas organizadas e equipamentos sinalizados. Agora converse com o técnico Paulo.')}
- else if(s.id==='dock'&&missionIndex===6){say({name:'Doca 02'},'A doca está pronta. Converse com a responsável pela expedição para confirmar o envio.')}
- else say({name:s.name},'Esta estação ainda não faz parte da sua missão atual. Converse com a equipe para receber orientações.');
- updateMissions();}
-function moveLoop(){if(!started){requestAnimationFrame(moveLoop);return}let dx=0,dy=0;if(keys.left||keys.ArrowLeft||keys.a)dx--;if(keys.right||keys.ArrowRight||keys.d)dx++;if(keys.up||keys.ArrowUp||keys.w)dy--;if(keys.down||keys.ArrowDown||keys.s)dy++;let len=Math.hypot(dx,dy)||1;if(dx||dy){player.x+=dx/len*player.speed/60;player.y+=dy/len*player.speed/60;player.x=Math.max(130,Math.min(W-130,player.x));player.y=Math.max(135,Math.min(H-135,player.y));player.walk+=.1;player.dir=dy<0?'up':dy>0?'down':dx<0?'left':'right'}draw();requestAnimationFrame(moveLoop)}
-document.getElementById('start').onclick=()=>{started=true;document.getElementById('startScreen').classList.add('hidden');document.getElementById('hud').classList.remove('hidden');updateMissions();draw();requestAnimationFrame(moveLoop)};
-document.getElementById('action').onclick=interact;document.getElementById('closeDialog').onclick=closeDialog;
-document.querySelectorAll('[data-dir]').forEach(b=>{let k=b.dataset.dir;b.onpointerdown=e=>{e.preventDefault();keys[k]=true;b.setPointerCapture(e.pointerId)};['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))});
-addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(k==='e'||k==='enter'||k===' ')interact()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>keys={});
-document.getElementById('mapBtn').onclick=()=>{let el=document.querySelector('.missionBox');el.style.display=el.style.display==='none'?'block':'none'};
-draw();
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  let vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+
+  function resize() {
+    vw = innerWidth; vh = innerHeight;
+    canvas.width = vw * dpr; canvas.height = vh * dpr;
+    canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  const W = 2600, H = 1800;
+  // Jogador inicia exatamente no centro do corredor principal como na foto
+  const player = { x: 1290, y: 780, speed: 260, dir: 'down', walk: 0 };
+
+  let cam = { x: 0, y: 0 }, keys = {}, coins = 225, dialogue = null;
+  let missionIndex = 0, inject = 0, packed = 0;
+  let borra = false, recycle = false, reject = false, maintenance = false, delivered = false, started = false;
+
+  // MESMAS 8 TAREFAS / MISSÕES DO JOGO ORIGINAL
+  const missions = [
+    { title: 'Converse com o Supervisor', desc: 'Encontre o supervisor perto da entrada.' },
+    { title: 'Produza 3 peças na Injetora 01', desc: 'Use a máquina de injeção três vezes.' },
+    { title: 'Leve a borra ao triturador', desc: 'Recolha a borra e leve ao setor de moagem.' },
+    { title: 'Separe os resíduos corretamente', desc: 'Deposite recicláveis e rejeitos nas lixeiras certas.' },
+    { title: 'Embale 10 peças', desc: 'Use a estação de embalagem até completar 10 peças.' },
+    { title: 'Fale com o Técnico de Manutenção', desc: 'Converse com o técnico no setor de manutenção.' },
+    { title: 'Envie o lote para expedição', desc: 'Converse com o responsável na doca.' },
+    { title: 'Conclua o turno com o Supervisor', desc: 'Volte à entrada e finalize seu turno.' }
+  ];
+
+  // POSICIONAMENTO DOS PERSONAGENS IGUAL À IMAGEM DE REFERÊNCIA
+  const npcs = [
+    {
+      id: 'supervisor', name: 'Supervisor Marcos', x: 1620, y: 500,
+      role: 'supervisor', hair: '#2e1d14', shirt: '#3a6296', pants: '#27384d', glasses: true,
+      lines: [
+        'Bem-vindo à XLP - SENAI! Hoje você vai acompanhar um turno completo.',
+        'Sua primeira tarefa é produzir três peças na Injetora 01. Depois, cuide da borra, dos resíduos e da expedição.',
+        'Excelente trabalho! O turno foi concluído. Você ajudou a equipe a manter a produção organizada.'
+      ]
+    },
+    {
+      id: 'operator', name: 'Operadora Bianca', x: 800, y: 540,
+      role: 'operator', hair: '#5e3522', shirt: '#ebeae6', pants: '#4f3b32', cap: false,
+      lines: [
+        'Oi! Aqui fazemos a inspeção visual das peças. Observe rebarbas, marcas e defeitos antes de aprovar um lote.',
+        'Dica: qualidade vem antes da quantidade.'
+      ]
+    },
+    {
+      id: 'technician', name: 'Técnico Paulo', x: 375, y: 1215,
+      role: 'technician', hair: '#3d2618', shirt: '#3c74b0', pants: '#27394f', cap: '#2b66a8',
+      lines: [
+        'Sou o técnico de manutenção. Antes de operar, confira proteções, sensores e sinalização. Nunca tente ajustar uma máquina em movimento.',
+        'Manutenção preventiva evita paradas e protege todo mundo.'
+      ]
+    },
+    {
+      id: 'quality', name: 'Inspetor André', x: 2220, y: 740,
+      role: 'quality', hair: '#2d2018', shirt: '#3c74b0', pants: '#27394f', cap: '#2b66a8',
+      lines: [
+        'Amostras aprovadas? Registre o resultado e mantenha o lote identificado.',
+        'Um bom operador acompanha o processo e comunica qualquer desvio.'
+      ]
+    },
+    {
+      id: 'shipping', name: 'Expedição Carla', x: 1745, y: 1320,
+      role: 'shipping', hair: '#382218', shirt: '#3c74b0', pants: '#27394f', cap: '#2b66a8',
+      lines: [
+        'A doca está pronta para receber o lote. Confira as caixas e confirme a entrega.',
+        'Lote recebido! Obrigada por manter tudo identificado.'
+      ]
+    },
+    {
+      id: 'warehouse', name: 'Almoxarife Júlia', x: 1290, y: 1580,
+      role: 'warehouse', hair: '#52301e', shirt: '#46816b', pants: '#2d3a35', cap: '#3b6e5b',
+      lines: [
+        'Recebemos caixas, etiquetas e materiais de embalagem por aqui. Confira sempre a identificação do lote.',
+        'Material organizado facilita o trabalho de toda a equipe.'
+      ]
+    }
+  ];
+
+  // ESTAÇÕES INTERATIVAS ALINHADAS AO LAYOUT VISUAL DA IMAGEM
+  const stations = [
+    { id: 'inject', name: 'INJETORA 01', x: 2040, y: 690, w: 380, h: 220, type: 'inject' },
+    { id: 'grinder', name: 'TRITURADOR', x: 755, y: 970, w: 160, h: 170, type: 'grinder' },
+    { id: 'scrap', name: 'TAMBOR DE BORRA', x: 1590, y: 865, w: 110, h: 110, type: 'crates_blue' },
+    { id: 'recycle', name: 'RECICLÁVEIS', x: 1940, y: 1090, w: 95, h: 135, type: 'bin_green' },
+    { id: 'reject', name: 'REJEITOS', x: 2255, y: 1090, w: 190, h: 135, type: 'bins_multi' },
+    { id: 'pack', name: 'EMBALAGEM', x: 2150, y: 1390, w: 460, h: 150, type: 'conveyor' },
+    { id: 'maint', name: 'BANCADA TÉCNICA', x: 525, y: 1140, w: 230, h: 180, type: 'maint_bench' },
+    { id: 'dock', name: 'DOCA 02', x: 1525, y: 1475, w: 230, h: 130, type: 'dock_pallets' }
+  ];
+
+  const INK = '#26292e';
+
+  function rRect(x, y, w, h, r, fill, stroke = INK, lw = 3) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+  }
+
+  function txt(t, x, y, size = 16, color = '#fff', align = 'center', weight = '800', outline = false) {
+    ctx.font = `${weight} ${size}px "Segoe UI", system-ui, sans-serif`;
+    ctx.textAlign = align;
+    if (outline) {
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(t, x, y);
+    }
+    ctx.fillStyle = color;
+    ctx.fillText(t, x, y);
+  }
+
+  // DESENHA CERCAS METÁLICAS AMARELAS COM TELA ARAMADA (IGUAL À FOTO)
+  function drawFence(x, y, w, h, posts = 4) {
+    // Tela de arame
+    ctx.fillStyle = 'rgba(70, 82, 92, 0.22)';
+    ctx.fillRect(x, y + 8, w, h - 14);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y + 8, w, h - 14);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(42, 48, 56, 0.45)';
+    ctx.lineWidth = 1.5;
+    for (let i = -h; i < w + h; i += 12) {
+      ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i + h, y + h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + i + h, y); ctx.lineTo(x + i, y + h); ctx.stroke();
+    }
+    ctx.restore();
+
+    // Travessas horizontais cinza/amarelo
+    rRect(x, y + 6, w, 7, 2, '#9aa3ad', INK, 2);
+    rRect(x, y + h - 12, w, 7, 2, '#9aa3ad', INK, 2);
+
+    // Postes amarelos industriais
+    for (let i = 0; i < posts; i++) {
+      const px = x + (w - 14) * (i / Math.max(1, posts - 1));
+      rRect(px, y, 14, h, 3, '#e8b638', INK, 2.5);
+      rRect(px - 3, y + h - 5, 20, 6, 2, '#5c646d', INK, 2);
+    }
+  }
+
+  // DESENHA TUBULAÇÕES INDUSTRIAIS METÁLICAS E AMARELAS
+  function drawPipes(x, y) {
+    // Tubos cinza grandes
+    rRect(x, y + 20, 290, 22, 8, '#8d96a0', INK, 3);
+    rRect(x + 268, y + 20, 22, 130, 8, '#8d96a0', INK, 3);
+    rRect(x + 30, y - 5, 18, 95, 6, '#76808a', INK, 3);
+    // Flanges
+    for (let fx of [x + 70, x + 160, x + 240]) {
+      rRect(fx, y + 16, 10, 30, 2, '#b3bcc4', INK, 2.5);
+    }
+    // Tubos amarelos de gás/óleo
+    rRect(x + 195, y + 55, 16, 175, 5, '#e8b331', INK, 2.5);
+    rRect(x + 225, y + 55, 16, 175, 5, '#e8b331', INK, 2.5);
+    rRect(x + 185, y + 95, 65, 14, 4, '#f5c84c', INK, 2.5);
+    rRect(x + 185, y + 145, 65, 14, 4, '#f5c84c', INK, 2.5);
+  }
+
+  // DESENHA CAIXA DE PAPELÃO ESTILO ILLUSTRATED 2.5D
+  function drawCardboardBox(x, y, w, h, d = 16) {
+    // Topo 3D
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + d * 0.7, y - d);
+    ctx.lineTo(x + w + d * 0.7, y - d);
+    ctx.lineTo(x + w, y);
+    ctx.closePath();
+    ctx.fillStyle = '#dfb176';
+    ctx.fill();
+    ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
+
+    // Lateral direita 3D
+    ctx.beginPath();
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x + w + d * 0.7, y - d);
+    ctx.lineTo(x + w + d * 0.7, y + h - d);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fillStyle = '#b38047';
+    ctx.fill();
+    ctx.stroke();
+
+    // Frente
+    rRect(x, y, w, h, 2, '#cca063', INK, 2.5);
+    // Fita adesiva
+    ctx.fillStyle = '#ebd0a2';
+    ctx.fillRect(x + w * 0.42, y + 1, w * 0.16, h - 2);
+    // Etiqueta branca
+    rRect(x + 6, y + 7, 14, 9, 1, '#f4f4f0', INK, 1.2);
+  }
+
+  // DESENHA VASO DE PLANTA
+  function drawPlant(x, y, scale = 1) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+    // Sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath(); ctx.ellipse(0, 34, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
+    // Vaso terracota
+    ctx.beginPath();
+    ctx.moveTo(-22, 0); ctx.lineTo(22, 0); ctx.lineTo(16, 34); ctx.lineTo(-16, 34);
+    ctx.closePath();
+    ctx.fillStyle = '#9c5a3c'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
+    rRect(-25, -6, 50, 9, 3, '#b86e4b', INK, 2.5);
+    // Tronco e folhas
+    rRect(-4, -28, 8, 24, 2, '#6e472b', INK, 2);
+    const leaves = [
+      [-18, -32, 18, '#4e8c42'], [18, -30, 17, '#4e8c42'],
+      [-12, -52, 20, '#62a84f'], [14, -50, 19, '#5a9c48'],
+      [0, -64, 22, '#73ba59'], [0, -38, 21, '#68b052']
+    ];
+    for (const [lx, ly, lr, lc] of leaves) {
+      ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+      ctx.fillStyle = lc; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // DESENHA A EMPILHADEIRA AMARELA NO CORREDOR (IGUAL À FOTO)
+  function drawForklift(x, y) {
+    ctx.save(); ctx.translate(x, y);
+    // Sombra no chão
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(45, 72, 115, 22, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Garfos e palete com caixas na frente
+    rRect(35, 58, 105, 11, 2, '#9e7240', INK, 2.5);
+    drawCardboardBox(42, 14, 48, 44, 14);
+    drawCardboardBox(90, 14, 48, 44, 14);
+    drawCardboardBox(44, -30, 48, 44, 14);
+    drawCardboardBox(92, -30, 46, 44, 14);
+    drawCardboardBox(64, -72, 52, 42, 14);
+
+    // Mastro vertical da empilhadeira
+    rRect(20, -65, 14, 132, 3, '#383e45', INK, 3);
+    rRect(32, -50, 8, 115, 2, '#6d7680', INK, 2);
+
+    // Corpo amarelo da empilhadeira
+    rRect(-68, 4, 92, 52, 10, '#f2b82e', INK, 3);
+    rRect(-74, 12, 22, 38, 6, '#3d434a', INK, 3); // Contrapeso traseiro
+    // Faixas pretas no contrapeso
+    ctx.fillStyle = '#f2b82e';
+    ctx.fillRect(-70, 20, 14, 5);
+    ctx.fillRect(-70, 31, 14, 5);
+
+    // Gaiola de proteção do operador
+    ctx.strokeStyle = INK; ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(-48, 6); ctx.lineTo(-42, -56); ctx.lineTo(14, -56); ctx.lineTo(18, 6);
+    ctx.stroke();
+    ctx.strokeStyle = '#4e565e'; ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Banco e volante
+    rRect(-36, -14, 22, 18, 4, '#2d3136', INK, 2);
+    ctx.beginPath(); ctx.moveTo(4, 4); ctx.lineTo(-4, -18); ctx.strokeStyle = INK; ctx.lineWidth = 4; ctx.stroke();
+
+    // Giroflex laranja no topo
+    rRect(-18, -68, 12, 12, 4, '#ff7b1c', INK, 2.5);
+
+    // Rodas
+    for (const [wx, wy, wr] of [[-46, 56, 20], [6, 58, 18]]) {
+      ctx.beginPath(); ctx.arc(wx, wy, wr, 0, Math.PI * 2);
+      ctx.fillStyle = '#2d3136'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(wx, wy, wr * 0.45, 0, Math.PI * 2);
+      ctx.fillStyle = '#9aa3ad'; ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // DESENHA TODO O CENÁRIO DA FÁBRICA XLP - SENAI (IDÊNTICO À FOTO)
+  function drawFactory() {
+    ctx.fillStyle = '#b4b8bd';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = '#8b9096';
+    ctx.lineWidth = 2;
+    for (let x = 0; x < W; x += 150) {
+      ctx.beginPath(); ctx.moveTo(x, 380); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 380; y < H; y += 135) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#e5b83b';
+    ctx.lineWidth = 9;
+    ctx.lineJoin = 'round';
+    ctx.strokeRect(1020, 410, 480, 1280);
+    ctx.strokeRect(110, 430, 860, 880);
+    ctx.strokeRect(1540, 430, 960, 880);
+
+    const crosswalks = [[910, 625], [1480, 625], [910, 1080]];
+    for (const [cx, cy] of crosswalks) {
+      ctx.fillStyle = 'rgba(245, 246, 248, 0.72)';
+      for (let i = 0; i < 5; i++) {
+        ctx.save();
+        ctx.translate(cx + i * 24, cy);
+        ctx.transform(1, 0, -0.35, 1, 0, 0);
+        ctx.fillRect(0, 0, 13, 38);
+        ctx.restore();
+      }
+    }
+
+    rRect(0, 0, W, 390, 0, '#78808a', INK, 3);
+    for (let x = 0; x < W; x += 260) {
+      rRect(x, 0, 28, 390, 0, '#5a626b', INK, 3);
+    }
+
+    rRect(110, 60, 860, 330, 4, '#6b7580', INK, 3);
+    for (let wx of [150, 445, 725]) {
+      const ww = wx === 725 ? 210 : 275;
+      rRect(wx, 95, ww, 185, 4, '#9ec2d6', INK, 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.beginPath();
+      ctx.moveTo(wx + 15, 100); ctx.lineTo(wx + 65, 100);
+      ctx.lineTo(wx + 25, 275); ctx.lineTo(wx - 5, 275);
+      ctx.closePath(); ctx.fill();
+    }
+    for (const ox of [285, 580]) {
+      rRect(ox - 24, 200, 48, 45, 8, '#3f6a9c', INK, 2.5);
+      ctx.beginPath(); ctx.arc(ox, 182, 16, 0, Math.PI * 2);
+      ctx.fillStyle = '#d99e77'; ctx.fill(); ctx.stroke();
+      rRect(ox - 18, 162, 36, 12, 5, '#2b394a', INK, 2);
+      rRect(ox - 28, 224, 56, 36, 3, '#4b5561', INK, 2);
+    }
+
+    rRect(995, 20, 530, 370, 6, '#cfd4da', INK, 3.5);
+    rRect(1040, 38, 440, 74, 8, '#e3e6ea', INK, 3.5);
+    txt('XLP -', 1190, 90, 44, '#363b42', 'center', '900');
+    txt('SENAI', 1355, 90, 44, '#b8322c', 'center', '900');
+
+    rRect(1080, 135, 360, 255, 4, '#436996', INK, 3.5);
+    for (let gy = 160; gy < 350; gy += 26) {
+      ctx.strokeStyle = '#2b4769'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(1084, gy); ctx.lineTo(1436, gy); ctx.stroke();
+    }
+    rRect(1080, 355, 360, 35, 0, '#e8b638', INK, 3);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(1080, 355, 360, 35); ctx.clip();
+    ctx.fillStyle = '#26292e';
+    for (let sx = 1060; sx < 1460; sx += 36) {
+      ctx.beginPath();
+      ctx.moveTo(sx, 390); ctx.lineTo(sx + 18, 355);
+      ctx.lineTo(sx + 34, 355); ctx.lineTo(sx + 16, 390);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+
+    rRect(1455, 165, 36, 36, 4, '#2e8b57', INK, 2.5);
+    txt('🏃', 1473, 190, 19, '#fff');
+    rRect(1462, 255, 22, 54, 8, '#cf382d', INK, 2.5);
+    rRect(1467, 245, 12, 10, 2, '#2b3036', INK, 2);
+
+    drawPlant(985, 375, 1.15);
+
+    rRect(1545, 130, 960, 260, 4, '#5a636e', INK, 3);
+    rRect(1545, 65, 960, 12, 3, '#e8b638', INK, 2.5);
+    rRect(1545, 118, 960, 12, 3, '#e8b638', INK, 2.5);
+    for (let rx = 1560; rx < 2500; rx += 55) {
+      rRect(rx, 65, 10, 65, 2, '#e8b638', INK, 2);
+    }
+    rRect(1745, 215, 36, 36, 4, '#368f5b', INK, 2.5);
+    txt('+', 1763, 243, 28, '#fff', 'center', '900');
+    rRect(1845, 190, 42, 42, 4, '#e6e8eb', INK, 2.5);
+    txt('⚠️', 1866, 219, 22);
+
+    drawPipes(280, 620);
+    drawFence(535, 675, 340, 115, 4);
+    drawFence(865, 685, 22, 370, 2);
+
+    rRect(210, 775, 135, 230, 6, '#7a848f', INK, 3);
+    rRect(225, 795, 105, 85, 4, '#505861', INK, 2.5);
+    rRect(330, 960, 90, 105, 5, '#c93b32', INK, 3);
+    for (let dy = 975; dy <= 1035; dy += 20) {
+      rRect(338, dy, 74, 14, 2, '#e04f46', INK, 2);
+    }
+
+    for (let py = 1040; py >= 920; py -= 30) {
+      drawCardboardBox(885, py, 64, 34, 14);
+    }
+
+    drawPipes(2120, 250);
+    drawForklift(1110, 1350);
+
+    rRect(40, 1380, 640, 70, 6, '#5f6b78', INK, 3);
+    rRect(40, 1450, 640, 260, 4, '#46505c', INK, 3);
+    for (let rx = 70; rx < 660; rx += 65) {
+      ctx.strokeStyle = '#333b45'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(rx, 1384); ctx.lineTo(rx - 20, 1446); ctx.stroke();
+    }
+    drawPlant(760, 1520, 1.35);
+
+    drawFence(840, 1650, 1180, 95, 11);
+  }
+
+  function drawStation(s) {
+    const x = s.x, y = s.y;
+
+    if (s.type === 'inject') {
+      rRect(x - 190, y + 35, 420, 75, 8, '#626c75', INK, 3);
+      rRect(x - 170, y - 95, 250, 145, 10, '#3b73b0', INK, 3.5);
+      rRect(x - 150, y - 75, 130, 85, 6, '#8bb5de', INK, 2.5);
+      rRect(x + 80, y - 65, 160, 115, 8, '#7c8791', INK, 3);
+      rRect(x + 110, y - 40, 70, 50, 4, '#363d45', INK, 2.5);
+      ctx.fillStyle = '#4ad66d'; ctx.fillRect(x + 120, y - 28, 12, 12);
+      ctx.fillStyle = '#ffcf48'; ctx.fillRect(x + 138, y - 28, 12, 12);
+      ctx.fillStyle = '#eb4d4b'; ctx.fillRect(x + 156, y - 28, 12, 12);
+
+      drawFence(x - 290, y + 60, 490, 110, 5);
+      rRect(x - 185, y + 72, 130, 62, 6, '#e3e5e8', INK, 3);
+      txt('INJETORA', x - 120, y + 100, 19, '#26292e', 'center', '900');
+      txt('01', x - 120, y + 126, 26, '#26292e', 'center', '900');
+    }
+
+    if (s.type === 'crates_blue') {
+      for (let i = 0; i < 3; i++) {
+        rRect(x - 45, y + 15 - i * 24, 90, 26, 4, i === 2 ? '#4d88c7' : '#35669c', INK, 2.5);
+      }
+      if (!borra && missionIndex === 2) {
+        rRect(x - 52, y - 78, 104, 24, 6, '#ffd452', INK, 2);
+        txt('BORRA', x, y - 61, 12, '#26292e', 'center', '900');
+      }
+    }
+
+    if (s.type === 'bin_green') {
+      rRect(x - 42, y - 55, 84, 115, 8, '#419645', INK, 3);
+      rRect(x - 46, y - 66, 92, 18, 5, '#59b35d', INK, 3);
+      txt('♻', x, y + 16, 38, '#ffffff');
+    }
+
+    if (s.type === 'bins_multi') {
+      rRect(x - 135, y - 35, 78, 85, 5, '#8c959e', INK, 2.5);
+      const bins = [
+        { dx: -25, color: '#3773b8' },
+        { dx: 55, color: '#cc3d35' },
+        { dx: 135, color: '#419645' }
+      ];
+      for (const b of bins) {
+        rRect(x + b.dx - 34, y - 48, 68, 102, 7, b.color, INK, 3);
+        rRect(x + b.dx - 37, y - 58, 74, 15, 4, b.color, INK, 2.5);
+        txt('♻', x + b.dx, y + 14, 30, '#ffffff');
+      }
+    }
+
+    if (s.type === 'conveyor') {
+      rRect(x - 220, y - 10, 450, 72, 8, '#4c545e', INK, 3);
+      rRect(x - 210, y - 22, 430, 24, 5, '#76808a', INK, 2.5);
+      for (let rx = x - 190; rx <= x + 190; rx += 42) {
+        ctx.beginPath(); ctx.arc(rx, y + 25, 11, 0, Math.PI * 2);
+        ctx.fillStyle = '#aeb6bf'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
+      }
+      drawCardboardBox(x - 150, y - 64, 62, 46, 15);
+      drawCardboardBox(x - 75, y - 64, 62, 46, 15);
+      drawCardboardBox(x + 75, y - 64, 68, 48, 15);
+    }
+
+    if (s.type === 'grinder') {
+      rRect(x - 75, y - 80, 150, 155, 8, '#8d96a0', INK, 3);
+      rRect(x - 52, y - 55, 104, 65, 5, '#59626b', INK, 2.5);
+      rRect(x - 36, y + 24, 72, 34, 4, '#363d45', INK, 2);
+    }
+
+    if (s.type === 'maint_bench') {
+      rRect(x - 110, y - 35, 130, 95, 6, '#939ca6', INK, 3);
+      drawCardboardBox(x + 35, y - 10, 74, 65, 16);
+    }
+
+    if (s.type === 'dock_pallets') {
+      drawCardboardBox(x - 95, y - 15, 76, 54, 16);
+      drawCardboardBox(x - 10, y - 15, 76, 54, 16);
+    }
+  }
+
+  function drawSpeechBubbleIcon(x, y, type) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(0, 32, 16, 5, 0, 0, Math.PI * 2); ctx.fill();
+
+    const isGold = type === '!';
+    const bg = isGold ? '#ffcf48' : '#ffffff';
+
+    rRect(-22, -24, 44, 42, 11, bg, INK, 3);
+    ctx.beginPath();
+    ctx.moveTo(-7, 17); ctx.lineTo(0, 26); ctx.lineTo(7, 17);
+    ctx.closePath();
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+
+    if (type === '!') {
+      txt('!', 0, 8, 28, '#26292e', 'center', '900');
+    } else if (type === '...') {
+      for (const dx of [-10, 0, 10]) {
+        ctx.beginPath(); ctx.arc(dx, -3, 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#26292e'; ctx.fill();
+      }
+    } else if (type === 'wrench') {
+      txt('🔧', 0, 6, 20, '#36454f');
+    } else if (type === 'box') {
+      txt('📦', 0, 6, 20, '#8a5a2b');
+    }
+    ctx.restore();
+  }
+
+  function drawChibiCharacter(opts) {
+    const { x, y, hair, shirt, pants, cap, glasses, isPlayer, bob = 0 } = opts;
+    ctx.save();
+    ctx.translate(x, y);
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.ellipse(0, 36, 24, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const by = Math.sin(bob) * 2.5;
+
+    rRect(-16, 22 + by, 13, 13, 4, isPlayer ? '#8c5a32' : '#2d3238', INK, 2.5);
+    rRect(3, 22 - by, 13, 13, 4, isPlayer ? '#8c5a32' : '#2d3238', INK, 2.5);
+
+    rRect(-15, 4, 13, 21, 3, pants, INK, 2.5);
+    rRect(2, 4, 13, 21, 3, pants, INK, 2.5);
+
+    rRect(-18, -26, 36, 33, 8, shirt, INK, 2.8);
+
+    if (isPlayer) {
+      rRect(-18, -2, 36, 7, 2, '#69442a', INK, 2);
+      ctx.beginPath();
+      ctx.moveTo(-8, -25); ctx.lineTo(0, -10); ctx.lineTo(8, -25);
+      ctx.strokeStyle = '#69442a'; ctx.lineWidth = 2.5; ctx.stroke();
+    } else {
+      rRect(4, -18, 9, 10, 2, '#294970', INK, 1.5);
+    }
+
+    rRect(-24, -22, 8, 22, 4, shirt, INK, 2.5);
+    rRect(16, -22, 8, 22, 4, shirt, INK, 2.5);
+    ctx.beginPath(); ctx.arc(-20, 2, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#e3a882'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(20, 2, 4.5, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, -45, 22, 0, Math.PI * 2);
+    ctx.fillStyle = '#e6ad87';
+    ctx.fill();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#1f2226';
+    ctx.beginPath(); ctx.ellipse(-7, -43, 2.8, 3.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(7, -43, 2.8, 3.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-8, -44.5, 1.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(6, -44.5, 1.1, 0, Math.PI * 2); ctx.fill();
+
+    if (glasses) {
+      rRect(-14, -48, 12, 9, 2, 'rgba(255,255,255,0.2)', INK, 2);
+      rRect(2, -48, 12, 9, 2, 'rgba(255,255,255,0.2)', INK, 2);
+      ctx.beginPath(); ctx.moveTo(-2, -44); ctx.lineTo(2, -44); ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, -36, 4, 0.1 * Math.PI, 0.9 * Math.PI);
+    ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.stroke();
+
+    if (cap) {
+      ctx.beginPath();
+      ctx.arc(0, -48, 22.5, Math.PI * 0.85, Math.PI * 2.15);
+      ctx.fillStyle = hair; ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, -52, 21, Math.PI, Math.PI * 2);
+      ctx.fillStyle = cap; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.8; ctx.stroke();
+      rRect(-18, -54, 38, 7, 3, '#1f4d82', INK, 2.5);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, -50, 23, Math.PI * 0.88, Math.PI * 2.12);
+      ctx.fillStyle = hair; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.8; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-18, -52); ctx.quadraticCurveTo(-6, -42, 0, -52);
+      ctx.quadraticCurveTo(10, -42, 19, -52);
+      ctx.fillStyle = hair; ctx.fill(); ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawNpc(n) {
+    drawChibiCharacter({
+      x: n.x, y: n.y,
+      hair: n.hair, shirt: n.shirt, pants: n.pants,
+      cap: n.cap, glasses: n.glasses
+    });
+
+    if (n.id === 'supervisor') {
+      drawSpeechBubbleIcon(n.x, n.y - 102, '!');
+    } else if (n.id === 'operator') {
+      drawSpeechBubbleIcon(n.x, n.y - 102, '...');
+    } else if (n.id === 'technician') {
+      drawSpeechBubbleIcon(n.x, n.y - 102, 'wrench');
+    } else if (n.id === 'shipping') {
+      drawSpeechBubbleIcon(n.x, n.y - 102, 'box');
+    }
+  }
+
+  function drawPlayer() {
+    drawChibiCharacter({
+      x: player.x, y: player.y,
+      hair: '#5c3622',
+      shirt: '#e8dfd1',
+      pants: '#705138',
+      isPlayer: true,
+      bob: player.walk
+    });
+  }
+
+  function nearest() {
+    let best = null, dist = 1e9;
+    for (const n of npcs) {
+      const d = Math.hypot(n.x - player.x, n.y - player.y);
+      if (d < dist) { dist = d; best = { kind: 'npc', obj: n, d }; }
+    }
+    for (const s of stations) {
+      const d = Math.hypot(s.x - player.x, s.y - player.y);
+      if (d < dist) { dist = d; best = { kind: 'station', obj: s, d }; }
+    }
+    return best && best.d < 155 ? best : null;
+  }
+
+  function draw() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, vw, vh);
+
+    const scale = Math.min(vw / 1280, vh / 720);
+    const viewW = vw / scale, viewH = vh / scale;
+    cam.x = Math.max(0, Math.min(W - viewW, player.x - viewW / 2));
+    cam.y = Math.max(0, Math.min(H - viewH, player.y - viewH / 2));
+
+    ctx.scale(dpr * scale, dpr * scale);
+    ctx.translate(-cam.x, -cam.y);
+
+    drawFactory();
+    stations.forEach(drawStation);
+
+    const actors = [
+      ...npcs.map(n => ({ y: n.y, fn: () => drawNpc(n) })),
+      { y: player.y, fn: drawPlayer }
+    ].sort((a, b) => a.y - b.y);
+    actors.forEach(a => a.fn());
+
+    const near = nearest();
+    if (near) {
+      const target = near.obj;
+      rRect(target.x - 68, target.y + 44, 136, 24, 8, 'rgba(32, 34, 38, 0.88)', '#ffcf48', 2);
+      txt(target.name, target.x, target.y + 60, 11.5, '#ffdf78', 'center', '800');
+    }
+  }
+
+  function updateMissions() {
+    document.getElementById('missions').innerHTML = missions.map((m, i) => {
+      let label = m.title;
+      if (i === 1) label = `Produza 3 peças na Injetora 01 (${inject}/3)`;
+      if (i === 3) label = `Separe os resíduos corretamente (${(recycle ? 1 : 0) + (reject ? 1 : 0)}/2)`;
+      if (i === 4) label = `Embale 10 peças (${packed}/10)`;
+      return `<div class="mission ${i < missionIndex ? 'done' : ''}"><span class="dot"></span><span>${label}</span></div>`;
+    }).join('');
+
+    const m = missions[Math.min(missionIndex, missions.length - 1)];
+    document.getElementById('objective').textContent = missionIndex >= missions.length ? 'Turno concluído!' : m.title;
+    document.getElementById('subobjective').textContent = missionIndex >= missions.length ? 'Parabéns! Você completou todas as missões.' : m.desc;
+    document.getElementById('coins').textContent = String(coins).padStart(4, '0');
+  }
+
+  function say(n, txtContent) {
+    dialogue = { npc: n };
+    document.getElementById('speaker').textContent = n.name;
+    document.getElementById('speech').textContent = txtContent;
+    document.getElementById('dialog').classList.add('show');
+  }
+
+  function closeDialog() {
+    document.getElementById('dialog').classList.remove('show');
+    dialogue = null;
+  }
+
+  function interact() {
+    if (!started) return;
+    if (dialogue) { closeDialog(); return; }
+    const near = nearest();
+    if (!near) return;
+
+    if (near.kind === 'npc') {
+      const n = near.obj;
+      let line = n.lines[0];
+      if (n.id === 'supervisor' && missionIndex === 0) {
+        missionIndex++; line = n.lines[0] + ' ' + n.lines[1]; coins += 10; updateMissions();
+      } else if (n.id === 'technician' && missionIndex === 5) {
+        missionIndex++; maintenance = true; line = n.lines[0] + ' ' + n.lines[1]; coins += 20; updateMissions();
+      } else if (n.id === 'shipping' && missionIndex === 6) {
+        missionIndex++; delivered = true; line = n.lines[0] + ' ' + n.lines[1]; coins += 30; updateMissions();
+      } else if (n.id === 'supervisor' && missionIndex === 7) {
+        missionIndex++; line = n.lines[2]; coins += 50; updateMissions();
+      } else if (n.id === 'operator' && missionIndex === 1) {
+        line = n.lines[0];
+      } else if (n.id === 'quality' && missionIndex >= 2) {
+        line = n.lines[0];
+      } else if (n.id === 'warehouse') {
+        line = n.lines[0];
+      }
+      say(n, line);
+      return;
+    }
+
+    const s = near.obj;
+    if (s.id === 'inject' && missionIndex === 1) {
+      inject++; coins += 5;
+      if (inject >= 3) {
+        missionIndex++;
+        say({ name: 'Sistema' }, 'Três peças produzidas! Agora recolha a borra e leve ao triturador.');
+      } else {
+        say({ name: 'Injetora 01' }, `Peça produzida: ${inject}/3. Continue até completar o lote.`);
+      }
+    } else if (s.id === 'scrap' && missionIndex === 2 && !borra) {
+      borra = true;
+      say({ name: 'Tambor de borra' }, 'Borra recolhida e identificada. Agora leve o material ao triturador.');
+    } else if (s.id === 'grinder' && missionIndex === 2 && borra) {
+      missionIndex++; coins += 15;
+      say({ name: 'Triturador' }, 'Borra triturada e armazenada para reaproveitamento. Agora separe os resíduos.');
+    } else if (s.id === 'recycle' && missionIndex === 3 && !recycle) {
+      recycle = true;
+      say({ name: 'Coleta seletiva' }, 'Recicláveis separados corretamente. Agora coloque os rejeitos no recipiente certo.');
+    } else if (s.id === 'reject' && missionIndex === 3 && recycle && !reject) {
+      reject = true; missionIndex++; coins += 15;
+      say({ name: 'Coleta seletiva' }, 'Separação concluída! Siga para a estação de embalagem.');
+    } else if (s.id === 'pack' && missionIndex === 4) {
+      packed = Math.min(10, packed + 2); coins += 2;
+      if (packed >= 10) {
+        missionIndex++;
+        say({ name: 'Embalagem' }, 'Dez peças embaladas e identificadas! Agora fale com o técnico de manutenção.');
+      } else {
+        say({ name: 'Embalagem' }, `Peças embaladas: ${packed}/10.`);
+      }
+    } else if (s.id === 'maint' && missionIndex === 5) {
+      say({ name: 'Bancada técnica' }, 'Área de manutenção: ferramentas organizadas e equipamentos sinalizados. Agora converse com o técnico Paulo.');
+    } else if (s.id === 'dock' && missionIndex === 6) {
+      say({ name: 'Doca 02' }, 'A doca está pronta. Converse com a responsável pela expedição para confirmar o envio.');
+    } else {
+      say({ name: s.name }, 'Esta estação ainda não faz parte da sua missão atual. Converse com a equipe para receber orientações.');
+    }
+    updateMissions();
+  }
+
+  function moveLoop() {
+    if (!started) { requestAnimationFrame(moveLoop); return; }
+    let dx = 0, dy = 0;
+    if (keys.left || keys.ArrowLeft || keys.a) dx--;
+    if (keys.right || keys.ArrowRight || keys.d) dx++;
+    if (keys.up || keys.ArrowUp || keys.w) dy--;
+    if (keys.down || keys.ArrowDown || keys.s) dy++;
+    const len = Math.hypot(dx, dy) || 1;
+    if (dx || dy) {
+      player.x += (dx / len) * player.speed / 60;
+      player.y += (dy / len) * player.speed / 60;
+      player.x = Math.max(140, Math.min(W - 140, player.x));
+      player.y = Math.max(410, Math.min(H - 120, player.y));
+      player.walk += 0.25;
+      player.dir = dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right';
+    } else {
+      player.walk = 0;
+    }
+    draw();
+    requestAnimationFrame(moveLoop);
+  }
+
+  document.getElementById('start').onclick = () => {
+    started = true;
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    updateMissions();
+    draw();
+    requestAnimationFrame(moveLoop);
+  };
+
+  document.getElementById('action').onclick = interact;
+  document.getElementById('closeDialog').onclick = closeDialog;
+
+  document.querySelectorAll('[data-dir]').forEach(b => {
+    const k = b.dataset.dir;
+    b.onpointerdown = e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => keys[k] = false));
+  });
+
+  addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+    keys[k] = true;
+    if (k === 'e' || k === 'enter' || k === ' ') interact();
+  });
+  addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+  addEventListener('blur', () => keys = {});
+
+  document.getElementById('mapBtn').onclick = () => {
+    const el = document.getElementById('missionBox');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  };
+
+  draw();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
