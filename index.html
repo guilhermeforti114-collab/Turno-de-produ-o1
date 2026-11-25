@@ -3,213 +3,251 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#14181f">
-  <title>Turno de Produção — XLP Pixel Arcade</title>
+  <meta name="theme-color" content="#141a22">
+  <title>Turno de Produção — XLP Arcade</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
       margin: 0; width: 100%; height: 100%; overflow: hidden;
-      background: #14181f; color: #f4f6f8;
-      font-family: 'Courier New', Courier, monospace;
+      background: #12171e; color: #f6f8fb;
+      font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
       touch-action: none;
     }
-    canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
+    canvas { display: block; width: 100%; height: 100%; }
+
     #hud { position: fixed; inset: 0; pointer-events: none; }
 
-    /* MISSÕES NO CANTO SUPERIOR ESQUERDO */
-    .missionBox {
-      position: absolute; top: 8px; left: 8px;
-      width: min(230px, 44vw);
-      background: rgba(18, 22, 29, 0.9);
-      border: 3px solid #6b7b94;
-      box-shadow: 0 4px 0 #090c10;
-      overflow: hidden; pointer-events: auto;
+    /* TOPO ORGANIZADO: CORAÇÕES LÁ EM CIMA + MOEDAS + OBJETIVO DISCRETO */
+    .topBar {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
     }
-    .missionHeader {
+
+    .leftTopCluster { display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
+
+    .heartsTop {
+      display: inline-flex; align-items: center; gap: 4px; width: fit-content;
+      background: rgba(18, 23, 31, 0.9);
+      border: 2px solid #ff6b63; border-radius: 10px;
+      padding: 4px 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+    }
+    .heart { font-size: 15px; transition: transform 0.2s, filter 0.2s; }
+    .heart.lost { filter: grayscale(1); opacity: 0.3; transform: scale(0.82); }
+
+    .missionBox {
+      width: min(215px, 44vw);
+      background: rgba(20, 25, 34, 0.88);
+      border: 2px solid #6c7d96; border-radius: 11px;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.45); overflow: hidden;
+    }
+    .missionHead {
       display: flex; align-items: center; gap: 6px;
-      padding: 6px 8px; background: #222a38;
-      border-bottom: 2px solid #6b7b94;
-      font-weight: 900; font-size: 12px; color: #ffd252;
+      padding: 6px 8px; background: rgba(12, 16, 22, 0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+      font-size: 11px; font-weight: 900; color: #ffd454;
     }
     .badgeExcl {
-      width: 18px; height: 18px; background: #ffd252; color: #161a21;
-      border: 2px solid #090c10; font-weight: 900; font-size: 12px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: linear-gradient(180deg, #ffd859, #e39614);
+      color: #1c1304; font-size: 12px; font-weight: 900;
       display: grid; place-items: center;
     }
-    .roleTag {
-      margin-left: auto; font-size: 9px; padding: 2px 5px;
-      background: #355f91; color: #fff; border: 1px solid #090c10;
-      max-width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .rolePill {
+      margin-left: auto; font-size: 8.5px; padding: 2px 5px;
+      border-radius: 5px; background: #2c629e; color: #fff;
+      max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    #missions { padding: 4px 7px 6px; max-height: 30vh; overflow-y: auto; }
-    .mission {
+    #missions { padding: 4px 7px 6px; max-height: 24vh; overflow-y: auto; }
+    .mRow {
       font-size: 10px; line-height: 1.25; padding: 3px 1px;
-      border-top: 1px dashed rgba(255,255,255,0.12); color: #e8edf5;
+      border-top: 1px solid rgba(255,255,255,0.08); color: #e4eaf2;
     }
-    .mission:first-child { border-top: 0; }
-    .mission.done { color: #7ce095; text-decoration: line-through; opacity: 0.75; }
-    .mission.current { color: #ffe285; font-weight: 900; }
+    .mRow:first-child { border-top: 0; }
+    .mRow.done { color: #7ce398; text-decoration: line-through; opacity: 0.72; }
+    .mRow.cur { color: #ffe285; font-weight: 900; }
 
-    /* OBJETIVO PEQUENO NO CANTO SUPERIOR DIREITO / MEIO SEM ATRAPALHAR */
-    .goalCorner {
-      position: absolute; top: 8px; right: 8px;
-      width: min(220px, 46vw);
-      background: rgba(18, 22, 29, 0.88);
-      border: 2.5px solid #ffd252;
-      box-shadow: 0 3px 0 #090c10;
-      padding: 5px 8px; text-align: left;
+    /* OBJETIVO COMPACTO NO CANTO SUPERIOR / LATERAL SEM POLUIR */
+    .goalCard {
+      width: min(210px, 46vw);
+      background: rgba(20, 25, 34, 0.88);
+      border: 2px solid #ffd454; border-radius: 10px;
+      padding: 5px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
       pointer-events: auto;
     }
-    .goalCorner b {
-      display: block; font-size: 10px; color: #ffd252;
+    .goalCard b {
+      display: block; font-size: 10px; color: #ffd86b;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .goalCorner small {
-      display: block; font-size: 9px; color: #d5dde8; margin-top: 1px;
+    .goalCard small {
+      display: block; font-size: 8.5px; color: #cfd8e3; margin-top: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .miniMeta {
+    .goalMeta {
       display: flex; justify-content: space-between; align-items: center;
-      margin-top: 4px; font-size: 9.5px; font-weight: 900; color: #fff;
+      margin-top: 4px; font-size: 9.5px; font-weight: 900;
     }
-    .coinsInline { color: #ffd86b; }
-    .cycleTrack {
-      height: 5px; background: #29313d; border: 1px solid #090c10;
-      margin-top: 4px; overflow: hidden;
-    }
-    .cycleFill { height: 100%; width: 100%; background: #55d67b; }
+    .coinsVal { color: #ffe07d; }
+    .timerBar { height: 5px; background: #2a3342; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+    .timerFill { height: 100%; width: 100%; background: linear-gradient(90deg, #4cd97b, #ffd454, #ff5449); }
 
-    .topMiniBtns {
-      position: absolute; top: 74px; right: 8px;
-      display: flex; gap: 5px; pointer-events: auto;
+    .rightTopCluster { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; pointer-events: auto; }
+    .utilBtns { display: flex; gap: 4px; }
+    .utilBtn {
+      background: rgba(26, 33, 45, 0.92); color: #fff;
+      border: 1.5px solid #7587a1; border-radius: 8px;
+      padding: 4px 7px; font-size: 9.5px; font-weight: 900; cursor: pointer;
     }
-    .miniBtn {
-      background: #232b38; color: #fff; border: 2px solid #6b7b94;
-      box-shadow: 0 2px 0 #090c10; padding: 4px 8px;
-      font-family: inherit; font-size: 10px; font-weight: 900; cursor: pointer;
-    }
-    .miniBtn:active { transform: translateY(2px); }
-
-    /* CORAÇÕES */
-    .heartsBox {
-      position: absolute; left: 10px; bottom: 162px;
-      display: flex; gap: 4px; background: rgba(18,22,29,0.88);
-      border: 2.5px solid #6b7b94; box-shadow: 0 3px 0 #090c10;
-      padding: 4px 8px;
-    }
-    .heartIcon { font-size: 16px; }
-    .heartIcon.lost { filter: grayscale(1); opacity: 0.35; }
+    .utilBtn:active { transform: scale(0.95); }
 
     /* DIÁLOGO */
     .dialogBox {
-      position: absolute; left: 50%; bottom: 156px; transform: translateX(-50%);
-      width: min(520px, 92vw); background: #161b24;
-      border: 3px solid #ffd252; box-shadow: 0 5px 0 #090c10;
-      padding: 10px 14px; display: none; pointer-events: auto;
+      position: absolute; left: 50%; bottom: 168px; transform: translateX(-50%);
+      width: min(520px, 92vw); background: rgba(18, 22, 30, 0.96);
+      border: 2.5px solid #ffd454; border-radius: 13px;
+      padding: 11px 14px; display: none; pointer-events: auto;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.65);
     }
     .dialogBox.show { display: block; }
-    .dialogBox.rhAlert { border-color: #ff574d; background: #2b1416; }
-    .dialogTop { display: flex; justify-content: space-between; align-items: center; }
-    .dialogBox strong { color: #ffd252; font-size: 13px; }
-    .dialogBox.rhAlert strong { color: #ff7a72; }
-    .dialogKind { font-size: 9px; font-weight: 900; padding: 2px 6px; background: #344154; color: #fff; }
-    .rhAlert .dialogKind { background: #b83229; }
-    .dialogBox p { margin: 6px 0 10px; font-size: 12px; line-height: 1.4; }
+    .dialogBox.rh { border-color: #ff594f; background: rgba(36, 16, 18, 0.97); }
+    .dialogHead { display: flex; justify-content: space-between; align-items: center; }
+    .dialogBox strong { color: #ffd86b; font-size: 13px; }
+    .dialogBox.rh strong { color: #ff7b73; }
+    .dialogTag { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 5px; background: #334257; color: #fff; }
+    .dialogBox.rh .dialogTag { background: #b83229; }
+    .dialogBox p { margin: 6px 0 9px; font-size: 12px; line-height: 1.4; }
     .dialogBox button {
-      float: right; background: #ffd252; color: #161a21;
-      border: 2px solid #090c10; box-shadow: 0 2px 0 #090c10;
-      padding: 5px 12px; font-family: inherit; font-weight: 900; font-size: 11px; cursor: pointer;
+      float: right; background: linear-gradient(180deg, #ffd859, #e39614);
+      color: #1c1304; border: 1.5px solid #422c08; border-radius: 7px;
+      padding: 6px 13px; font-weight: 900; font-size: 11px; cursor: pointer;
     }
 
-    /* BOTÕES DE MOVER E AÇÃO BEM MAIORES PARA CELULAR */
-    .dpad {
-      position: absolute; left: 10px; bottom: 10px;
+    /* ANALÓGICO / D-PAD E AÇÃO BEM GRANDES E LIVRES DE QUALQUER SOBREPOSIÇÃO */
+    .pad {
+      position: absolute; left: 12px; bottom: 12px;
       display: grid;
-      grid-template-columns: 54px 54px 54px;
-      grid-template-rows: 48px 48px 48px;
+      grid-template-columns: 58px 58px 58px;
+      grid-template-rows: 50px 50px 50px;
       gap: 4px; pointer-events: auto;
     }
-    .dpad button {
-      background: rgba(25, 31, 41, 0.92); color: #fff;
-      border: 3px solid #7c8fa8; box-shadow: 0 3px 0 #090c10;
-      font-family: inherit; font-size: 20px; font-weight: 900; touch-action: none;
+    .pad button {
+      background: rgba(24, 30, 41, 0.9); color: #fff;
+      border: 2px solid rgba(255,255,255,0.34); border-radius: 12px;
+      font-size: 20px; font-weight: 900; touch-action: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.45);
     }
-    .dpad button:active { background: #ffd252; color: #14181f; transform: translateY(2px); }
-    .dpad .up { grid-column: 2; }
-    .dpad .left { grid-column: 1; grid-row: 2; }
-    .dpad .right { grid-column: 3; grid-row: 2; }
-    .dpad .down { grid-column: 2; grid-row: 3; }
+    .pad button:active { background: #ffd454; color: #1a1204; transform: scale(0.95); }
+    .pad .up { grid-column: 2; }
+    .pad .left { grid-column: 1; grid-row: 2; }
+    .pad .right { grid-column: 3; grid-row: 2; }
+    .pad .down { grid-column: 2; grid-row: 3; }
 
     .actionBtn {
-      position: absolute; right: 10px; bottom: 10px;
-      pointer-events: auto; width: 108px; height: 74px;
-      background: #ffd252; color: #14181f;
-      border: 3px solid #090c10; box-shadow: 0 4px 0 #090c10;
-      font-family: inherit; font-weight: 900; font-size: 15px; line-height: 1.15; cursor: pointer;
+      position: absolute; right: 12px; bottom: 14px;
+      pointer-events: auto; width: 112px; height: 78px;
+      background: linear-gradient(180deg, #ffd859, #e39614);
+      color: #1c1304; border: 2.5px solid #3d2a09; border-radius: 15px;
+      font-weight: 900; font-size: 15px; line-height: 1.15;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.55); cursor: pointer;
     }
-    .actionBtn span { font-size: 11px; }
-    .actionBtn:active { transform: translateY(3px); }
+    .actionBtn span { font-size: 11px; opacity: 0.85; }
+    .actionBtn:active { transform: scale(0.95); }
 
-    /* MENU ARCADE E GAME OVER */
+    /* MODO DEITADO (LANDSCAPE): AJUSTA BOTÕES E HUD PARA TELA LARGA */
+    @media (orientation: landscape) and (max-height: 540px) {
+      .missionBox { width: 195px; }
+      #missions { max-height: 32vh; }
+      .heartsBox, .heartsTop { padding: 3px 7px; }
+      .heart { font-size: 13px; }
+      .pad {
+        left: 16px; bottom: 10px;
+        grid-template-columns: 52px 52px 52px;
+        grid-template-rows: 44px 44px 44px;
+      }
+      .pad button { font-size: 18px; }
+      .actionBtn { right: 16px; bottom: 12px; width: 104px; height: 68px; font-size: 14px; }
+      .dialogBox { bottom: 18px; width: min(460px, 52vw); }
+    }
+
+    /* MENU INICIAL E GAME OVER */
     #startScreen, #gameOverScreen {
       position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 14px;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 2px, transparent 2px 4px), radial-gradient(circle at 50% 35%, #2b3a4f, #10141b 75%);
+      background: radial-gradient(circle at 50% 35%, #2f4257, #10151c 78%);
     }
-    .arcadeCard {
-      width: min(500px, 94vw); text-align: center; background: #171d26;
-      border: 4px solid #ffd252; box-shadow: 0 0 0 3px #090c10, 0 10px 0 #090c10;
-      padding: 18px 16px;
+    .card {
+      width: min(510px, 94vw); text-align: center;
+      background: rgba(20, 25, 33, 0.96);
+      border: 3px solid #ffd454; border-radius: 18px;
+      padding: 20px 18px; box-shadow: 0 22px 60px rgba(0,0,0,0.75);
     }
-    .dangerCard { border-color: #ff574d; }
-    .arcadeKicker { font-size: 10px; letter-spacing: 2px; color: #ffd252; font-weight: 900; }
-    .dangerCard .arcadeKicker { color: #ff7870; }
-    .arcadeCard h1, .arcadeCard h2 { margin: 8px 0; font-size: clamp(24px, 6vw, 38px); line-height: 1.05; color: #ffd252; text-shadow: 3px 3px 0 #090c10; }
-    .dangerCard h2 { color: #ff7870; }
-    .arcadeDesc { font-size: 11.5px; line-height: 1.4; color: #d5dde8; margin: 6px 0 12px; }
-    .rouletteBox { background: #10141b; border: 2px solid #49576b; padding: 8px 10px; margin-bottom: 10px; }
-    .rouletteLabel { font-size: 9.5px; font-weight: 900; color: #9fb0c7; }
-    .rouletteResult { margin: 5px 0 7px; font-size: 12px; font-weight: 900; color: #7ae598; }
-    .secondaryBtn { background: #263142; color: #fff; border: 2px solid #6b7d94; padding: 5px 10px; font-family: inherit; font-size: 10.5px; font-weight: 900; cursor: pointer; }
-    .productSelectRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 14px; font-size: 10px; font-weight: 900; }
-    .chip { background: #222936; color: #d6dde8; border: 2px solid #59677a; padding: 4px 7px; font-family: inherit; font-size: 10px; font-weight: 900; cursor: pointer; }
-    .chip.active { background: #ffd252; color: #14181f; border-color: #090c10; }
-    .primaryBtn { background: #55d67b; color: #101712; border: 3px solid #090c10; box-shadow: 0 4px 0 #090c10; padding: 11px 22px; font-family: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
-    .primaryBtn:active { transform: translateY(3px); }
+    .card.danger { border-color: #ff594f; }
+    .kicker { font-size: 10px; letter-spacing: 2px; color: #ffd454; font-weight: 900; }
+    .card.danger .kicker { color: #ff7b73; }
+    .card h1, .card h2 {
+      margin: 7px 0; font-size: clamp(24px, 6vw, 40px); line-height: 1.04;
+      color: #ffd86b; text-shadow: 0 3px 0 #473109;
+    }
+    .card.danger h2 { color: #ff7b73; text-shadow: 0 3px 0 #47120e; }
+    .desc { font-size: 12px; line-height: 1.4; color: #d6dee8; margin: 6px 0 12px; }
+    .roleBox { background: #121720; border: 2px solid #46556b; border-radius: 11px; padding: 9px 12px; margin-bottom: 10px; }
+    .roleTitle { font-size: 9.5px; font-weight: 900; color: #9eb0c7; }
+    .rolePicked { margin: 5px 0 7px; font-size: 12.5px; font-weight: 900; color: #7ce398; }
+    .btnSec { background: #283447; color: #fff; border: 1.5px solid #6f829c; border-radius: 8px; padding: 5px 11px; font-size: 10.5px; font-weight: 900; cursor: pointer; }
+    .prodRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 14px; font-size: 10px; font-weight: 900; }
+    .prodChip { background: #212936; color: #d6dee8; border: 1.5px solid #59687d; border-radius: 8px; padding: 5px 8px; font-size: 10px; font-weight: 900; cursor: pointer; }
+    .prodChip.on { background: #ffd454; color: #1c1304; border-color: #ffd454; }
+    .btnPri {
+      background: linear-gradient(180deg, #5be082, #32ab58); color: #0b170f;
+      border: 2.5px solid #13381e; border-radius: 11px; padding: 11px 24px;
+      font-size: 13.5px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 14px rgba(0,0,0,0.45);
+    }
+    .btnPri:active { transform: scale(0.96); }
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
+
   <div id="hud" class="hidden">
-    <div class="missionBox" id="missionBox">
-      <div class="missionHeader"><span class="badgeExcl">!</span><span>MISSÕES</span><span class="roleTag" id="roleTag">FUNÇÃO</span></div>
-      <div id="missions"></div>
-    </div>
-
-    <div class="goalCorner">
-      <b id="objective">Converse com o Supervisor</b>
-      <small id="subobjective">Aproxime-se e aperte AÇÃO.</small>
-      <div class="miniMeta">
-        <span class="coinsInline">🪙 <span id="coins">0225</span></span>
-        <span>⏱ <span id="timerText">--s</span></span>
+    <div class="topBar">
+      <div class="leftTopCluster">
+        <div class="heartsTop" id="heartsBox" aria-label="Vidas"></div>
+        <div class="missionBox" id="missionBox">
+          <div class="missionHead">
+            <span class="badgeExcl">!</span>
+            <span>MISSÕES</span>
+            <span class="rolePill" id="roleTag">FUNÇÃO</span>
+          </div>
+          <div id="missions"></div>
+        </div>
       </div>
-      <div class="cycleTrack"><div class="cycleFill" id="cycleFill"></div></div>
-    </div>
 
-    <div class="topMiniBtns">
-      <button class="miniBtn" id="snackBtn">🥪 LANCHE</button>
-      <button class="miniBtn" id="mapBtn">📋 MISSÕES</button>
+      <div class="rightTopCluster">
+        <div class="goalCard">
+          <b id="objective">Converse com o Supervisor</b>
+          <small id="subobjective">Aproxime-se e aperte AÇÃO.</small>
+          <div class="goalMeta">
+            <span class="coinsVal">🪙 <span id="coins">0225</span></span>
+            <span>⏱ <span id="timerText">--s</span></span>
+          </div>
+          <div class="timerBar"><div class="timerFill" id="timerFill"></div></div>
+        </div>
+        <div class="utilBtns">
+          <button class="utilBtn" id="snackBtn">🥪 LANCHE</button>
+          <button class="utilBtn" id="mapBtn">📋 MISSÕES</button>
+        </div>
+      </div>
     </div>
 
     <div class="dialogBox" id="dialog">
-      <div class="dialogTop"><strong id="speaker">Supervisor</strong><span class="dialogKind" id="dialogKind">EQUIPE</span></div>
+      <div class="dialogHead">
+        <strong id="speaker">Supervisor</strong>
+        <span class="dialogTag" id="dialogTag">EQUIPE</span>
+      </div>
       <p id="speech"></p>
-      <button id="closeDialog">OK ▶</button>
+      <button id="closeDialog">CONTINUAR ▶</button>
     </div>
 
-    <div class="heartsBox" id="heartsBox"></div>
-
-    <div class="dpad">
+    <div class="pad">
       <button class="up" data-dir="up">▲</button>
       <button class="left" data-dir="left">◀</button>
       <button class="right" data-dir="right">▶</button>
@@ -220,48 +258,67 @@
   </div>
 
   <div id="startScreen">
-    <div class="arcadeCard">
-      <div class="arcadeKicker">XLP · SENAI · PIXEL ARCADE</div>
+    <div class="card">
+      <div class="kicker">XLP · SENAI · SIMULADOR ARCADE</div>
       <h1>TURNO DE<br>PRODUÇÃO</h1>
-      <p class="arcadeDesc">Faça os processos no tempo da injetora, cuide das borras e resíduos, embale os produtos e mande para o caminhão. Erros chamam o <strong>RH</strong> e custam <strong>1 coração</strong> (3 vidas).</p>
-      <div class="rouletteBox">
-        <div class="rouletteLabel">SORTEIO DE FUNÇÃO DO TURNO</div>
-        <div class="rouletteResult" id="rouletteResult">Clique em SORTEAR ou INICIAR</div>
-        <button class="secondaryBtn" id="rerollBtn">🎲 SORTEAR FUNÇÃO</button>
+      <p class="desc">Faça os processos no tempo da injetora, cuide das borras e resíduos, embale os produtos e mande para o caminhão. Erros chamam o <strong>RH</strong> e custam <strong>1 coração</strong> (3 vidas).</p>
+      <div class="roleBox">
+        <div class="roleTitle">SORTEIO DE FUNÇÃO DO TURNO</div>
+        <div class="rolePicked" id="rolePicked">★ Sorteando...</div>
+        <button class="btnSec" id="rerollBtn">🎲 SORTEAR FUNÇÃO</button>
       </div>
-      <div class="productSelectRow">
+      <div class="prodRow">
         <span>PRODUTO:</span>
-        <button class="chip active" data-prod="Balde de plástico">Balde de plástico</button>
-        <button class="chip" data-prod="Copos de plástico">Copos de plástico</button>
-        <button class="chip" data-prod="Garrafas de plástico">Garrafas de plástico</button>
+        <button class="prodChip on" data-prod="Balde de plástico">Balde de plástico</button>
+        <button class="prodChip" data-prod="Copos de plástico">Copos de plástico</button>
+        <button class="prodChip" data-prod="Garrafas de plástico">Garrafas de plástico</button>
       </div>
-      <button class="primaryBtn" id="startBtn">ENTRAR NO TURNO ▶</button>
+      <button class="btnPri" id="startBtn">ENTRAR NO TURNO ▶</button>
     </div>
   </div>
 
   <div id="gameOverScreen" class="hidden">
-    <div class="arcadeCard dangerCard">
-      <div class="arcadeKicker">CONVOCADO PELO RH · 0 CORAÇÕES</div>
+    <div class="card danger">
+      <div class="kicker">CONVOCADO PELO RH · 0 CORAÇÕES</div>
       <h2>TURNO INTERROMPIDO!</h2>
       <p id="gameOverReason">Você errou os processos da linha e perdeu seus 3 corações.</p>
-      <button class="primaryBtn" id="restartBtn">RECOMEÇAR DO ZERO ↻</button>
+      <button class="btnPri" id="restartBtn">RECOMEÇAR DO ZERO ↻</button>
     </div>
   </div>
+
   <script>
   (() => {
-    const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
     let vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
-    function resize() { vw = innerWidth; vh = innerHeight; canvas.width = vw * dpr; canvas.height = vh * dpr; canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px'; ctx.imageSmoothingEnabled = false; }
+
+    function resize() {
+      vw = innerWidth; vh = innerHeight;
+      canvas.width = vw * dpr; canvas.height = vh * dpr;
+      canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
+    }
     addEventListener('resize', resize); resize();
-    const W = 2400, H = 1650, PX = 4, INK = '#12151b';
-    const ROLES = ['Remover rebarbas da peça', 'Injetar 3 peças e retirar as borras', 'Triturar as borras e colocar em um recipiente grande para guardar e ser reutilizado depois para injetar mais produtos'];
+
+    const W = 2500, H = 1700, INK = '#1d2229';
+    const ROLES = [
+      'Remover rebarbas da peça',
+      'Injetar 3 peças e retirar as borras',
+      'Triturar as borras e colocar em um recipiente grande para guardar e ser reutilizado depois para injetar mais produtos'
+    ];
     const PRODUCTS = ['Balde de plástico', 'Copos de plástico', 'Garrafas de plástico'];
-    let assignedRole = ROLES[0], selectedProduct = PRODUCTS[0], productIdx = 0, started = false, gameOver = false, hearts = 3, coins = 225, missionIndex = 0, dialogue = null;
-    let injectCount = 0, burrRemovedCount = 0, scrapCollected = false, scrapInDrum = false, scrapGround = false, recycledStored = 0, recycleBinDone = false, nonRecycleBinDone = false, snackTimeActive = false, snackTrashReady = false, packedCount = 0, sentToTruck = false;
-    let cycleTimer = 26; const cycleMax = 26;
-    const player = { x: 1180, y: 840, r: 16, speed: 245, walk: 0 };
-    let cam = { x: 0, y: 0 }, camReady = false, keys = {};
-    const rhInspector = { active: false, x: 1560, y: 520, targetX: 1180, targetY: 840, reason: '' };
+
+    let assignedRole = ROLES[0], selectedProduct = PRODUCTS[0], productIdx = 0;
+    let started = false, gameOver = false, hearts = 3, coins = 225, missionIndex = 0, dialogue = null;
+    let injectCount = 0, burrRemovedCount = 0, scrapCollected = false, scrapInDrum = false, scrapGround = false;
+    let recycledStored = 0, recycleBinDone = false, nonRecycleBinDone = false;
+    let snackTimeActive = false, snackTrashReady = false, packedCount = 0, sentToTruck = false;
+    let cycleTimer = 28; const cycleMax = 28;
+
+    const player = { x: 1220, y: 860, r: 17, speed: 270, walk: 0, facing: 'down' };
+    let cam = { x: 0, y: 0 }, camInit = false, keys = {}, particles = [];
+
+    const rhInspector = { active: false, x: 1620, y: 490, targetX: 1220, targetY: 860 };
+
     const missions = [
       { title: 'Converse com o Supervisor', desc: 'Fale com o Supervisor perto da entrada.' },
       { title: 'Injete 3 peças e retire as borras', desc: 'Use a Injetora 01 (3x), retire borras e remova rebarbas.' },
@@ -272,140 +329,419 @@
       { title: 'Envie o lote para o caminhão', desc: 'Leve/confirme a carga na Doca / Caminhão de expedição.' },
       { title: 'Conclua o turno com o Supervisor', desc: 'Volte ao Supervisor para encerrar o turno.' }
     ];
+
     const solids = [
-      { x: 0, y: 0, w: W, h: 355 }, { x: 0, y: H - 55, w: W, h: 55 }, { x: 0, y: 0, w: 65, h: H }, { x: W - 65, y: 0, w: 65, h: H },
-      { x: 1470, y: 355, w: 170, h: 160 }, { x: 1730, y: 610, w: 360, h: 170 }, { x: 1240, y: 630, w: 230, h: 150 }, { x: 1530, y: 890, w: 95, h: 95 },
-      { x: 640, y: 760, w: 150, h: 145 }, { x: 830, y: 770, w: 115, h: 120 }, { x: 1710, y: 1030, w: 85, h: 110 }, { x: 1825, y: 1030, w: 85, h: 110 },
-      { x: 1920, y: 1290, w: 390, h: 125 }, { x: 1320, y: 1340, w: 260, h: 150 }, { x: 350, y: 1070, w: 220, h: 140 }
+      { x: 0, y: 0, w: W, h: 360 }, { x: 0, y: H - 60, w: W, h: 60 },
+      { x: 0, y: 0, w: 70, h: H }, { x: W - 70, y: 0, w: 70, h: H },
+      { x: 1530, y: 360, w: 180, h: 165 }, // Porta RECURSOS HUMANOS
+      { x: 1810, y: 630, w: 380, h: 180 }, // Injetora 01
+      { x: 1280, y: 650, w: 240, h: 160 }, // Injetora 02
+      { x: 1590, y: 920, w: 100, h: 100 }, // Tambor de Borras
+      { x: 660, y: 780, w: 160, h: 150 },  // Triturador
+      { x: 860, y: 790, w: 125, h: 125 },  // Recipiente Grande Reuso
+      { x: 1780, y: 1060, w: 90, h: 115 }, // Recicláveis
+      { x: 1900, y: 1060, w: 90, h: 115 }, // Não Recicláveis
+      { x: 1980, y: 1330, w: 410, h: 130 }, // Esteira Embalagem
+      { x: 1360, y: 1380, w: 280, h: 155 }, // Caminhão Expedição
+      { x: 360, y: 1100, w: 230, h: 145 }  // Bancada Manutenção
     ];
+
     const npcs = [
-      { id: 'supervisor', name: 'Supervisor Marcos', x: 1430, y: 545, shirt: '#39659c', hair: '#2e1c12', glasses: true, badge: '!', lines: ['Bem-vindo à XLP - SENAI! Hoje você atua na linha de injeção plástica, reuso de borras, resíduos e expedição.', 'Faça cada etapa no tempo da injetora. Se errar processo ou estourar o tempo, o RH vem dar bronca e você perde 1 coração!', 'Turno concluído com excelência! Produção, reuso de borra, resíduos e caminhão dentro do padrão.'] },
-      { id: 'operator', name: 'Operadora Bianca', x: 960, y: 575, shirt: '#e6e2d8', hair: '#633722', glasses: false, badge: '...', lines: ['Fique de olho no tempo do ciclo da injetora: retire as borras, remova rebarbas e não misture resíduos.', 'Quando bater a hora do lanche, surgem embalagens/resíduos para descartar na coleta seletiva!'] },
-      { id: 'technician', name: 'Técnico Paulo', x: 455, y: 1020, shirt: '#396fa8', hair: '#2c1e16', cap: '#265382', badge: '🔧', lines: ['Manutenção preventiva em dia! Verifique sensores, travas do molde e triturador antes de operar.', 'Segurança e reuso correto de borras mantêm a fábrica produtiva.'] },
-      { id: 'shipping', name: 'Motorista / Expedição Carla', x: 1630, y: 1390, shirt: '#396fa8', hair: '#3b2419', cap: '#265382', badge: '📦', lines: ['O caminhão está na doca aguardando o lote embalado de baldes, copos ou garrafas plásticas!', 'Carga conferida e embarcada no caminhão com sucesso!'] }
+      {
+        id: 'supervisor', name: 'Supervisor Marcos', x: 1480, y: 555,
+        shirt: '#3768a3', hair: '#2b1b12', glasses: true, badge: '!',
+        lines: [
+          'Bem-vindo à XLP - SENAI! Hoje você atua na linha de injeção plástica, reuso de borras, resíduos e expedição.',
+          'Faça cada etapa no tempo da injetora. Se errar processo ou estourar o tempo, o RH vem dar bronca e você perde 1 coração!',
+          'Turno concluído com excelência! Produção, reuso de borra, resíduos e caminhão dentro do padrão.'
+        ]
+      },
+      {
+        id: 'operator', name: 'Operadora Bianca', x: 980, y: 585,
+        shirt: '#ebe6dc', hair: '#663620', glasses: false, badge: '...',
+        lines: [
+          'Fique de olho no tempo do ciclo da injetora: retire as borras, remova rebarbas e não misture resíduos.',
+          'Quando bater a hora do lanche, surgem embalagens/resíduos para descartar na coleta seletiva!'
+        ]
+      },
+      {
+        id: 'technician', name: 'Técnico Paulo', x: 475, y: 1045,
+        shirt: '#3973ad', hair: '#2b1e16', cap: '#245282', badge: '🔧',
+        lines: [
+          'Manutenção preventiva em dia! Verifique sensores, travas do molde e triturador antes de operar.',
+          'Segurança e reuso correto de borras mantêm a fábrica produtiva.'
+        ]
+      },
+      {
+        id: 'shipping', name: 'Motorista / Expedição Carla', x: 1690, y: 1435,
+        shirt: '#3973ad', hair: '#3b2419', cap: '#245282', badge: '📦',
+        lines: [
+          'O caminhão está na doca aguardando o lote embalado de baldes, copos ou garrafas plásticas!',
+          'Carga conferida e embarcada no caminhão com sucesso!'
+        ]
+      }
     ];
+
     const stations = [
-      { id: 'inject1', name: 'INJETORA 01', x: 1910, y: 785 }, { id: 'inject2', name: 'INJETORA 02', x: 1355, y: 785 },
-      { id: 'scrapDrum', name: 'TAMBOR DE BORRAS', x: 1577, y: 990 }, { id: 'grinder', name: 'TRITURADOR', x: 715, y: 910 },
-      { id: 'bigBin', name: 'RECIPIENTE GRANDE (REUSO)', x: 887, y: 895 }, { id: 'recycleBin', name: 'LIXEIRA RECICLÁVEIS', x: 1752, y: 1145 },
-      { id: 'nonRecycleBin', name: 'LIXEIRA NÃO RECICLÁVEIS', x: 1867, y: 1145 }, { id: 'packBelt', name: 'EMBALAGEM', x: 2115, y: 1420 },
-      { id: 'truckDock', name: 'CAMINHÃO EXPEDIÇÃO', x: 1450, y: 1495 }, { id: 'maintBench', name: 'BANCADA MANUTENÇÃO', x: 460, y: 1215 }
+      { id: 'inject1', name: 'INJETORA 01', x: 2000, y: 810 },
+      { id: 'inject2', name: 'INJETORA 02', x: 1400, y: 810 },
+      { id: 'scrapDrum', name: 'TAMBOR DE BORRAS', x: 1640, y: 1020 },
+      { id: 'grinder', name: 'TRITURADOR', x: 740, y: 930 },
+      { id: 'bigBin', name: 'RECIPIENTE GRANDE (REUSO)', x: 922, y: 915 },
+      { id: 'recycleBin', name: 'LIXEIRA RECICLÁVEIS', x: 1825, y: 1175 },
+      { id: 'nonRecycleBin', name: 'LIXEIRA NÃO RECICLÁVEIS', x: 1945, y: 1175 },
+      { id: 'packBelt', name: 'EMBALAGEM', x: 2185, y: 1460 },
+      { id: 'truckDock', name: 'CAMINHÃO EXPEDIÇÃO', x: 1500, y: 1535 },
+      { id: 'maintBench', name: 'BANCADA MANUTENÇÃO', x: 475, y: 1245 }
     ];
-    function rollRole() { assignedRole = ROLES[Math.floor(Math.random() * ROLES.length)]; document.getElementById('rouletteResult').textContent = '★ ' + assignedRole; document.getElementById('roleTag').textContent = assignedRole.split(' ')[0].toUpperCase(); }
+
+    function spawnBurst(x, y, color, count = 10) {
+      for (let i = 0; i < count; i++) {
+        const a = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+        const spd = 45 + Math.random() * 90;
+        particles.push({ x, y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, life: 0.55, max: 0.55, color });
+      }
+    }
+
+    function rollRole() {
+      assignedRole = ROLES[Math.floor(Math.random() * ROLES.length)];
+      document.getElementById('rolePicked').textContent = '★ ' + assignedRole;
+      document.getElementById('roleTag').textContent = assignedRole.split(' ')[0].toUpperCase();
+    }
     rollRole();
     document.getElementById('rerollBtn').onclick = rollRole;
-    document.querySelectorAll('.chip').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); selectedProduct = btn.dataset.prod; productIdx = PRODUCTS.indexOf(selectedProduct); }; });
-    function renderHearts() { const box = document.getElementById('heartsBox'); box.innerHTML = ''; for (let i = 0; i < 3; i++) { const span = document.createElement('span'); span.className = 'heartIcon' + (i >= hearts ? ' lost' : ''); span.textContent = '❤️'; box.appendChild(span); } }
-    function say(speaker, text, isRh = false) { dialogue = { speaker, text, isRh }; const box = document.getElementById('dialog'); document.getElementById('speaker').textContent = speaker; document.getElementById('dialogKind').textContent = isRh ? 'DIRETORIA / RH' : 'FÁBRICA'; document.getElementById('speech').textContent = text; box.classList.toggle('rhAlert', isRh); box.classList.add('show'); }
-    function closeDialog() { dialogue = null; document.getElementById('dialog').classList.remove('show'); document.getElementById('dialog').classList.remove('rhAlert'); }
+
+    document.querySelectorAll('.prodChip').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.prodChip').forEach(c => c.classList.remove('on'));
+        btn.classList.add('on');
+        selectedProduct = btn.dataset.prod;
+        productIdx = PRODUCTS.indexOf(selectedProduct);
+      };
+    });
+
+    function renderHearts() {
+      const box = document.getElementById('heartsBox');
+      box.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const s = document.createElement('span');
+        s.className = 'heart' + (i >= hearts ? ' lost' : '');
+        s.textContent = '❤️';
+        box.appendChild(s);
+      }
+    }
+
+    function say(speaker, text, isRh = false) {
+      dialogue = { speaker, text, isRh };
+      const box = document.getElementById('dialog');
+      document.getElementById('speaker').textContent = speaker;
+      document.getElementById('dialogTag').textContent = isRh ? 'DIRETORIA / RH' : 'FÁBRICA';
+      document.getElementById('speech').textContent = text;
+      box.classList.toggle('rh', isRh);
+      box.classList.add('show');
+    }
+
+    function closeDialog() {
+      dialogue = null;
+      document.getElementById('dialog').classList.remove('show', 'rh');
+    }
+
     function triggerRhReprimand(reason) {
-      if (gameOver) return; hearts = Math.max(0, hearts - 1); renderHearts(); coins = Math.max(0, coins - 15); cycleTimer = cycleMax;
-      rhInspector.active = true; rhInspector.x = 1555; rhInspector.y = 480; rhInspector.targetX = player.x + 42; rhInspector.targetY = player.y; rhInspector.reason = reason;
-      say('Representante do RH (Diretoria)', `Sermão da Diretoria: ${reason}! Atenção ao padrão operacional da XLP - SENAI. Você perdeu 1 coração (${hearts}/3 restantes).`, true);
-      if (hearts <= 0) { gameOver = true; document.getElementById('gameOverReason').textContent = `Você perdeu os 3 corações após: ${reason}. Recomece o turno do zero!`; document.getElementById('gameOverScreen').classList.remove('hidden'); }
+      if (gameOver) return;
+      hearts = Math.max(0, hearts - 1);
+      renderHearts();
+      coins = Math.max(0, coins - 15);
+      cycleTimer = cycleMax;
+      spawnBurst(player.x, player.y - 20, '#ff594f', 14);
+
+      rhInspector.active = true;
+      rhInspector.x = 1615;
+      rhInspector.y = 485;
+      rhInspector.targetX = player.x + 44;
+      rhInspector.targetY = player.y;
+
+      say(
+        'Representante do RH (Diretoria)',
+        `Sermão da Diretoria: ${reason}! Atenção aos procedimentos da XLP - SENAI. Você perdeu 1 coração (${hearts}/3 restantes).`,
+        true
+      );
+
+      if (hearts <= 0) {
+        gameOver = true;
+        document.getElementById('gameOverReason').textContent =
+          `Você perdeu os 3 corações após: ${reason}. Recomece o turno do zero!`;
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+      }
       updateHud();
     }
-    function resetAllState() { hearts = 3; coins = 225; missionIndex = 0; injectCount = 0; burrRemovedCount = 0; scrapCollected = false; scrapInDrum = false; scrapGround = false; recycledStored = 0; recycleBinDone = false; nonRecycleBinDone = false; snackTimeActive = false; snackTrashReady = false; packedCount = 0; sentToTruck = false; cycleTimer = cycleMax; player.x = 1180; player.y = 840; camReady = false; gameOver = false; rhInspector.active = false; closeDialog(); renderHearts(); updateHud(); }
+
+    function resetAllState() {
+      hearts = 3; coins = 225; missionIndex = 0; injectCount = 0; burrRemovedCount = 0;
+      scrapCollected = false; scrapInDrum = false; scrapGround = false; recycledStored = 0;
+      recycleBinDone = false; nonRecycleBinDone = false; snackTimeActive = false; snackTrashReady = false;
+      packedCount = 0; sentToTruck = false; cycleTimer = cycleMax; particles = [];
+      player.x = 1220; player.y = 860; camInit = false; gameOver = false; rhInspector.active = false;
+      closeDialog(); renderHearts(); updateHud();
+    }
+
     function updateHud() {
-      const roleBonus = ((assignedRole.includes('rebarbas') && burrRemovedCount > 0) || (assignedRole.includes('3 peças') && injectCount > 0) || (assignedRole.includes('Triturar') && recycledStored > 0)) ? ' [★]' : '';
+      const roleBonus =
+        (assignedRole.includes('rebarbas') && burrRemovedCount > 0) ||
+        (assignedRole.includes('3 peças') && injectCount > 0) ||
+        (assignedRole.includes('Triturar') && recycledStored > 0)
+          ? ' [★]' : '';
+
       document.getElementById('missions').innerHTML = missions.map((m, i) => {
         let t = m.title;
-        if (i === 1) t = `Injete 3 peças (${injectCount}/3) e remova rebarbas (${burrRemovedCount}/3)`;
-        if (i === 2) t = `Borra no tambor/triturada (${recycledStored}/1 reuso)`;
-        if (i === 3) t = `Resíduos: recicláveis (${recycleBinDone ? 1 : 0}/1) e não recicláveis (${nonRecycleBinDone ? 1 : 0}/1)`;
+        if (i === 1) t = `Injete 3 peças (${injectCount}/3) e rebarbas (${burrRemovedCount}/3)`;
+        if (i === 2) t = `Borra tambor/triturada (${recycledStored}/1)`;
+        if (i === 3) t = `Resíduos: rec (${recycleBinDone ? 1 : 0}/1) / não rec (${nonRecycleBinDone ? 1 : 0}/1)`;
         if (i === 4) t = `Embale 10 peças (${packedCount}/10)`;
-        return `<div class="mission ${i < missionIndex ? 'done' : (i === missionIndex ? 'current' : '')}">▸ ${t}</div>`;
-      }).join('');    function snap(v) { return Math.round(v / PX) * PX; }
-    function rBox(x, y, w, h, _r, fill, stroke = INK, lw = PX) {
-      x = snap(x); y = snap(y); w = snap(w); h = snap(h);
-      if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.strokeRect(x + lw / 2, y + lw / 2, Math.max(0, w - lw), Math.max(0, h - lw)); }
+        return `<div class="mRow ${i < missionIndex ? 'done' : (i === missionIndex ? 'cur' : '')}">▸ ${t}</div>`;
+      }).join('');
+
+      const cur = missions[Math.min(missionIndex, missions.length - 1)];
+      document.getElementById('objective').textContent =
+        missionIndex >= missions.length ? 'Turno concluído!' : cur.title + roleBonus;
+      document.getElementById('subobjective').textContent =
+        missionIndex >= missions.length ? 'Tudo concluído!' : cur.desc;
+      document.getElementById('coins').textContent = String(coins).padStart(4, '0');
+    }    function rBox(x, y, w, h, r, fill, stroke = INK, lw = 3) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, r);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
     }
-    function pText(t, x, y, size = 14, color = '#fff', align = 'center', weight = '900') {
-      ctx.font = `${weight} ${size}px "Courier New", monospace`;
+
+    function pText(t, x, y, size = 15, color = '#fff', align = 'center', weight = '900') {
+      ctx.font = `${weight} ${size}px "Trebuchet MS", sans-serif`;
       ctx.textAlign = align;
-      ctx.fillStyle = '#0c0f14';
-      ctx.fillText(t, snap(x) + 2, snap(y) + 2);
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 4;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(t, x, y);
       ctx.fillStyle = color;
-      ctx.fillText(t, snap(x), snap(y));
+      ctx.fillText(t, x, y);
     }
-    function drawCrate(x, y, w, h) {
-      rBox(x + 8, y - 8, w, h, 0, '#e0b377', INK, 3);
-      rBox(x, y, w, h, 0, '#c79658', INK, 3);
-      rBox(x + w * 0.42, y + 3, w * 0.16, h - 6, 0, '#ebd0a2', null, 0);
+
+    function drawBox3D(x, y, w, h, d = 14) {
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w, y);
+      ctx.closePath(); ctx.fillStyle = '#e5b87b'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x + w, y); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y + h - d); ctx.lineTo(x + w, y + h);
+      ctx.closePath(); ctx.fillStyle = '#b37f44'; ctx.fill(); ctx.stroke();
+
+      rBox(x, y, w, h, 3, '#cfa165', INK, 2.5);
+      ctx.fillStyle = '#f0d5a8'; ctx.fillRect(x + w * 0.42, y + 2, w * 0.16, h - 4);
     }
+
+    function drawPipes(x, y, len = 260) {
+      rBox(x, y, len, 20, 7, '#8d97a3', INK, 3);
+      rBox(x + len - 20, y, 20, 110, 7, '#8d97a3', INK, 3);
+      rBox(x + 170, y + 20, 14, 130, 5, '#ebb734', INK, 2.5);
+      rBox(x + 200, y + 20, 14, 130, 5, '#ebb734', INK, 2.5);
+    }
+
     function drawFactory() {
-      // Piso pixelado em blocos de 80px
-      for (let y = 355; y < H - 55; y += 80) {
-        for (let x = 65; x < W - 65; x += 80) {
-          rBox(x, y, 80, 80, 0, ((x + y) / 80) % 2 === 0 ? '#9aa1ab' : '#8e95a0', '#6d747e', 2);
-        }
+      // Piso industrial com profundidade e juntas
+      ctx.fillStyle = '#b4b9c0';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 2;
+      for (let x = 70; x < W - 70; x += 120) { ctx.beginPath(); ctx.moveTo(x, 360); ctx.lineTo(x, H - 60); ctx.stroke(); }
+      for (let y = 360; y < H - 60; y += 110) { ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(W - 70, y); ctx.stroke(); }
+
+      // Faixas amarelas e zebrados de segurança
+      ctx.strokeStyle = '#e8b938'; ctx.lineWidth = 8;
+      ctx.strokeRect(130, 415, W - 260, H - 515);
+
+      // Parede superior com vigas e iluminação
+      rBox(0, 0, W, 360, 0, '#6e7885', INK, 4);
+      for (let x = 0; x < W; x += 280) rBox(x, 0, 26, 360, 0, '#515a66', INK, 3);
+
+      // Placa principal XLP - SENAI e portão azul
+      rBox(1010, 28, 440, 74, 8, '#e6e9ed', INK, 4);
+      pText('XLP -', 1155, 78, 38, '#2f353d');
+      pText('SENAI', 1315, 78, 38, '#c7342b');
+
+      rBox(1080, 125, 300, 235, 5, '#426b9c', INK, 4);
+      for (let gy = 155; gy < 325; gy += 28) { ctx.strokeStyle = '#2a486b'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(1085, gy); ctx.lineTo(1375, gy); ctx.stroke(); }
+      rBox(1080, 322, 300, 38, 0, '#e8b638', INK, 3);
+
+      // Porta marrom ao lado das injetoras com placa "RECURSOS HUMANOS"
+      rBox(1530, 360, 180, 165, 6, '#6e472b', INK, 4);
+      rBox(1542, 376, 156, 86, 4, '#593820', INK, 2.5);
+      rBox(1536, 366, 168, 44, 5, '#fff3cf', INK, 2.5);
+      pText('RECURSOS', 1620, 385, 14, '#362010');
+      pText('HUMANOS', 1620, 402, 14, '#362010');
+      ctx.fillStyle = '#ffd454'; ctx.beginPath(); ctx.arc(1690, 450, 6, 0, Math.PI * 2); ctx.fill();
+
+      // Janelas da sala de controle à esquerda
+      for (const jx of [150, 440, 730]) {
+        rBox(jx, 85, 225, 170, 6, '#9bc4d9', INK, 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.beginPath(); ctx.moveTo(jx + 14, 90); ctx.lineTo(jx + 60, 90); ctx.lineTo(jx + 22, 250); ctx.lineTo(jx - 6, 250); ctx.closePath(); ctx.fill();
       }
-      ctx.strokeStyle = '#e6b83c'; ctx.lineWidth = 8; ctx.strokeRect(120, 405, W - 240, H - 500);
-      rBox(0, 0, W, 355, 0, '#5a626e', INK, 4);
-      for (let x = 0; x < W; x += 240) rBox(x, 0, 24, 355, 0, '#444b54', INK, 3);
-      rBox(980, 32, 440, 72, 0, '#e3e6ea', INK, 4); pText('XLP - SENAI', 1200, 78, 34, '#c9342b');
-      rBox(1050, 125, 300, 230, 0, '#3e638f', INK, 4); rBox(1050, 322, 300, 33, 0, '#e8b638', INK, 3);
-      rBox(1470, 355, 170, 160, 0, '#6d472c', INK, 4); rBox(1476, 362, 158, 42, 0, '#fff2cc', INK, 2);
-      pText('RECURSOS', 1555, 380, 13, '#3b2312'); pText('HUMANOS', 1555, 396, 13, '#3b2312'); rBox(1612, 442, 12, 16, 0, '#e6b83c', INK, 2);
-      for (const jx of [160, 460, 740]) { rBox(jx, 90, 220, 165, 0, '#88b4cc', INK, 3); rBox(jx + 12, 102, 48, 32, 0, 'rgba(255,255,255,0.25)', null, 0); }
-      if (snackTimeActive && snackTrashReady) { rBox(1110, 1020, 44, 34, 0, '#f2f2f2', INK, 3); pText('🥪', 1132, 1043, 16); rBox(1170, 1030, 38, 28, 0, '#72b5e8', INK, 3); pText('🥤', 1189, 1050, 15); }
+
+      // Tubulações industriais e empilhadeira decorativa
+      drawPipes(240, 560, 270);
+      drawPipes(2160, 260, 240);
+      drawBox3D(1080, 1180, 64, 44, 14);
+      drawBox3D(1148, 1180, 64, 44, 14);
+      drawBox3D(1112, 1134, 66, 44, 14);
+
+      // Resíduos da hora do lanche quando ativa
+      if (snackTimeActive && snackTrashReady) {
+        rBox(1120, 1020, 46, 36, 7, '#f5f6f8', INK, 2.5);
+        pText('🥪', 1143, 1044, 18);
+        rBox(1180, 1028, 40, 30, 6, '#75b9ed', INK, 2.5);
+        pText('🥤', 1200, 1049, 16);
+      }
     }
+
     function drawStations() {
-      rBox(1730, 610, 360, 170, 0, '#34689e', INK, 4); rBox(1755, 630, 150, 78, 0, '#7fb0d9', INK, 3); rBox(1935, 635, 125, 70, 0, '#252b33', INK, 3);
-      rBox(1948, 648, 14, 14, 0, '#55d67b', null, 0); rBox(1968, 648, 14, 14, 0, '#ffd252', null, 0); rBox(1988, 648, 14, 14, 0, '#e8483c', null, 0);
-      pText('INJETORA 01', 1910, 755, 16, '#ffd666');
-      rBox(1240, 630, 230, 150, 0, '#4176ad', INK, 4); pText('INJETORA 02', 1355, 712, 14, '#fff');
-      rBox(1530, 890, 95, 95, 0, '#386894', INK, 4); rBox(1524, 916, 107, 36, 0, '#ffd452', INK, 3); pText('BORRAS', 1577, 940, 13, '#12151b');
-      rBox(640, 760, 150, 145, 0, '#76808c', INK, 4); rBox(665, 782, 100, 56, 0, '#353c45', INK, 3); pText('TRITURADOR', 715, 875, 12, '#ffd666');
-      rBox(830, 770, 115, 120, 0, '#49735e', INK, 4); pText('REUSO', 887, 822, 13, '#fff'); pText(`(${recycledStored})`, 887, 845, 12, '#ffd666');
-      rBox(1710, 1030, 85, 110, 0, '#3b9147', INK, 4); pText('♻', 1752, 1085, 24, '#fff'); pText('RECICLÁVEL', 1752, 1122, 9, '#fff');
-      rBox(1825, 1030, 85, 110, 0, '#bf3730', INK, 4); pText('🗑', 1867, 1085, 24, '#fff'); pText('NÃO REC.', 1867, 1122, 9, '#fff');
-      rBox(1920, 1290, 390, 125, 0, '#4c545e', INK, 4); drawCrate(1955, 1255, 56, 40); drawCrate(2050, 1255, 56, 40); pText(`EMBALAGEM (${packedCount}/10)`, 2115, 1365, 14, '#ffd666');
-      rBox(1320, 1340, 260, 150, 0, '#dfe3e8', INK, 4); rBox(1520, 1355, 60, 120, 0, '#34689e', INK, 3); pText('CAMINHÃO XLP', 1435, 1422, 15, '#12151b');
-      rBox(350, 1070, 220, 140, 0, '#875e36', INK, 4); pText('MANUTENÇÃO', 460, 1146, 13, '#fff2cc');
+      // Injetora 01 (centro/direita)
+      rBox(1810, 630, 380, 180, 12, '#356ea8', INK, 4);
+      rBox(1835, 652, 155, 82, 7, '#89b7e0', INK, 3);
+      rBox(2015, 656, 135, 74, 7, '#2a313a', INK, 3);
+      ctx.fillStyle = '#55e082'; ctx.fillRect(2030, 672, 14, 14);
+      ctx.fillStyle = '#ffd454'; ctx.fillRect(2052, 672, 14, 14);
+      ctx.fillStyle = '#ff574d'; ctx.fillRect(2074, 672, 14, 14);
+      pText('INJETORA 01', 2000, 782, 18, '#ffd86b');
+
+      // Injetora 02
+      rBox(1280, 650, 240, 160, 12, '#437cb8', INK, 3.5);
+      rBox(1305, 672, 110, 64, 6, '#99c2e6', INK, 2.5);
+      pText('INJETORA 02', 1400, 775, 16, '#fff');
+
+      // Tambor de Borras identificado
+      rBox(1590, 920, 100, 100, 14, '#3b6ea1', INK, 3.5);
+      rBox(1582, 948, 116, 38, 5, '#ffd454', INK, 2.5);
+      pText('BORRAS', 1640, 973, 15, '#1d2229');
+
+      // Triturador de borras
+      rBox(660, 780, 160, 150, 10, '#7d8794', INK, 3.5);
+      rBox(688, 804, 104, 58, 6, '#373e47', INK, 2.5);
+      pText('TRITURADOR', 740, 902, 14, '#ffd86b');
+
+      // Recipiente Grande para armazenar e reutilizar borras
+      rBox(860, 790, 125, 125, 12, '#4c7862', INK, 3.5);
+      pText('REUSO', 922, 845, 15, '#fff');
+      pText(`(${recycledStored})`, 922, 870, 14, '#ffd86b');
+
+      // Coleta seletiva: Recicláveis e Não Recicláveis
+      rBox(1780, 1060, 90, 115, 10, '#3e994a', INK, 3.5);
+      pText('♻', 1825, 1118, 28, '#fff');
+      pText('RECICLÁVEL', 1825, 1158, 10, '#fff');
+
+      rBox(1900, 1060, 90, 115, 10, '#c93c34', INK, 3.5);
+      pText('🗑', 1945, 1118, 26, '#fff');
+      pText('NÃO REC.', 1945, 1158, 10, '#fff');
+
+      // Esteira de Embalagem com caixas
+      rBox(1980, 1330, 410, 130, 10, '#505963', INK, 3.5);
+      drawBox3D(2015, 1292, 60, 42, 14);
+      drawBox3D(2115, 1292, 60, 42, 14);
+      drawBox3D(2225, 1292, 60, 42, 14);
+      pText(`EMBALAGEM (${packedCount}/10)`, 2185, 1415, 16, '#ffd86b');
+
+      // Caminhão de Expedição
+      rBox(1360, 1380, 280, 155, 12, '#e6e9ed', INK, 3.5);
+      rBox(1575, 1396, 65, 124, 7, '#3870ab', INK, 3);
+      pText('CAMINHÃO XLP', 1475, 1465, 17, '#1d2229');
+
+      // Bancada de Manutenção
+      rBox(360, 1100, 230, 145, 10, '#8f653b', INK, 3.5);
+      drawBox3D(505, 1125, 62, 44, 12);
+      pText('MANUTENÇÃO', 455, 1175, 14, '#fff2cc');
     }
-    function drawCharacter(x, y, shirt, hair, cap, glasses, bob = 0, label = '') {
-      x = snap(x); y = snap(y + Math.sin(bob) * 2.5);
-      rBox(x - 18, y + 20, 36, 10, 0, 'rgba(0,0,0,0.35)', null, 0);
-      rBox(-14, 6, 11, 18, 0, '#253140', INK, 3); rBox(3, 6, 11, 18, 0, '#253140', INK, 3);
-      rBox(-17, -22, 34, 30, 0, shirt, INK, 3);
-      rBox(-16, -48, 32, 26, 0, '#e6ad87', INK, 3);
-      rBox(-10, -39, 5, 6, 0, '#12151b', null, 0); rBox(5, -39, 5, 6, 0, '#12151b', null, 0);
-      if (glasses) { rBox(-13, -42, 10, 9, 0, 'rgba(255,255,255,0.2)', INK, 2); rBox(3, -42, 10, 9, 0, 'rgba(255,255,255,0.2)', INK, 2); }
-      rBox(-18, -56, 36, 10, 0, cap || hair, INK, 3);
-      if (label) { rBox(-22, -84, 44, 22, 0, label === '!' ? '#ffd252' : '#ffffff', INK, 3); pText(label, 0, -68, 12, '#12151b'); }
+
+    function drawChar(x, y, shirt, hair, cap, glasses, bob = 0, label = '') {
+      ctx.save();
+      ctx.translate(x, y + Math.sin(bob) * 3);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(0, 30, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+      const legSwing = Math.sin(bob) * 5;
+      rBox(-15, 6 + legSwing * 0.4, 12, 20, 4, '#29384a', INK, 2.5);
+      rBox(3, 6 - legSwing * 0.4, 12, 20, 4, '#29384a', INK, 2.5);
+      rBox(-18, -23, 36, 32, 9, shirt, INK, 3);
+
+      ctx.beginPath(); ctx.arc(0, -41, 20, 0, Math.PI * 2);
+      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+
+      ctx.fillStyle = '#1c2026';
+      ctx.beginPath(); ctx.arc(-6.5, -40, 2.8, 0, Math.PI * 2); ctx.arc(6.5, -40, 2.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-7.5, -41.2, 1, 0, Math.PI * 2); ctx.arc(5.5, -41.2, 1, 0, Math.PI * 2); ctx.fill();
+
+      if (glasses) {
+        rBox(-14, -45, 11, 9, 2, 'rgba(255,255,255,0.22)', INK, 2);
+        rBox(3, -45, 11, 9, 2, 'rgba(255,255,255,0.22)', INK, 2);
+      }
+
+      ctx.beginPath(); ctx.arc(0, -47, 21, Math.PI * 0.88, Math.PI * 2.12);
+      ctx.fillStyle = cap || hair; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+
+      if (label) {
+        const pulse = Math.sin(performance.now() / 160) * 3;
+        rBox(-22, -88 + pulse, 44, 25, 8, label === '!' ? '#ffd859' : '#ffffff', INK, 2.5);
+        pText(label, 0, -70 + pulse, 15, '#1d2229');
+      }
+      ctx.restore();
     }
+
     function resolveCollisions() {
       for (const s of solids) {
-        const cx = Math.max(s.x, Math.min(player.x, s.x + s.w)), cy = Math.max(s.y, Math.min(player.y, s.y + s.h));
+        const cx = Math.max(s.x, Math.min(player.x, s.x + s.w));
+        const cy = Math.max(s.y, Math.min(player.y, s.y + s.h));
         const dx = player.x - cx, dy = player.y - cy, d2 = dx * dx + dy * dy;
-        if (d2 < player.r * player.r) { const d = Math.sqrt(d2) || 0.01, ov = player.r - d; player.x += (dx / d) * ov; player.y += (dy / d) * ov; }
+        if (d2 < player.r * player.r) {
+          const d = Math.sqrt(d2) || 0.01, ov = player.r - d;
+          player.x += (dx / d) * ov; player.y += (dy / d) * ov;
+        }
       }
     }
+
     function nearestInteractable() {
-      let best = null, bestDist = 145;
+      let best = null, bestDist = 150;
       for (const n of npcs) { const d = Math.hypot(n.x - player.x, n.y - player.y); if (d < bestDist) { bestDist = d; best = { kind: 'npc', obj: n }; } }
       for (const st of stations) { const d = Math.hypot(st.x - player.x, st.y - player.y); if (d < bestDist) { bestDist = d; best = { kind: 'station', obj: st }; } }
       return best;
     }
+
     function interact() {
       if (!started || gameOver) return;
       if (dialogue) { closeDialog(); return; }
       const near = nearestInteractable(); if (!near) return;
+
       if (near.kind === 'npc') {
         const n = near.obj;
-        if (n.id === 'supervisor') { if (missionIndex === 0) { missionIndex = 1; coins += 10; say(n.name, n.lines[0] + ' ' + n.lines[1]); } else if (missionIndex === 7) { missionIndex = 8; coins += 60; say(n.name, n.lines[2]); } else say(n.name, n.lines[1]); }
-        else if (n.id === 'technician') { if (missionIndex === 5) { missionIndex = 6; coins += 20; say(n.name, n.lines[0] + ' Agora vá até o caminhão de expedição.'); } else say(n.name, n.lines[0]); }
-        else if (n.id === 'shipping') { if (missionIndex === 6 && packedCount >= 10) { missionIndex = 7; sentToTruck = true; coins += 35; say(n.name, n.lines[1] + ' Volte ao Supervisor para concluir o turno.'); } else if (missionIndex === 6) { triggerRhReprimand('Tentou despachar para o caminhão sem embalar as 10 peças'); return; } else say(n.name, n.lines[0]); }
-        else say(n.name, n.lines[0]);
+        if (n.id === 'supervisor') {
+          if (missionIndex === 0) { missionIndex = 1; coins += 10; say(n.name, n.lines[0] + ' ' + n.lines[1]); }
+          else if (missionIndex === 7) { missionIndex = 8; coins += 60; say(n.name, n.lines[2]); }
+          else say(n.name, n.lines[1]);
+        } else if (n.id === 'technician') {
+          if (missionIndex === 5) { missionIndex = 6; coins += 20; say(n.name, n.lines[0] + ' Agora vá até o caminhão de expedição.'); }
+          else say(n.name, n.lines[0]);
+        } else if (n.id === 'shipping') {
+          if (missionIndex === 6 && packedCount >= 10) { missionIndex = 7; sentToTruck = true; coins += 35; say(n.name, n.lines[1] + ' Volte ao Supervisor para concluir o turno.'); }
+          else if (missionIndex === 6) { triggerRhReprimand('Tentou despachar para o caminhão sem embalar as 10 peças'); return; }
+          else say(n.name, n.lines[0]);
+        } else say(n.name, n.lines[0]);
+        spawnBurst(n.x, n.y - 25, '#ffd859', 8);
         updateHud(); return;
       }
+
       const st = near.obj;
+      spawnBurst(st.x, st.y - 10, '#7ce398', 10);
+
       if (st.id === 'inject1' || st.id === 'inject2') {
         if (missionIndex === 1) {
           if (scrapCollected) { triggerRhReprimand('Deixou a borra acumulada sem levar ao tambor identificado'); return; }
-          injectCount = Math.min(3, injectCount + 1); burrRemovedCount = Math.min(3, burrRemovedCount + 1); scrapCollected = true; cycleTimer = cycleMax; coins += 8;
+          injectCount = Math.min(3, injectCount + 1); burrRemovedCount = Math.min(3, burrRemovedCount + 1);
+          scrapCollected = true; cycleTimer = cycleMax; coins += 8;
           productIdx = (productIdx + 1) % PRODUCTS.length; selectedProduct = PRODUCTS[productIdx];
           if (injectCount >= 3 && burrRemovedCount >= 3) { missionIndex = 2; say('Injetora / Rebarbas', '3 peças injetadas, rebarbas removidas e borras separadas! Leve a borra ao Tambor de Borras.'); }
           else say('Injetora', `Peça ${injectCount}/3 injetada (${selectedProduct}) e rebarba removida! Borra pronta para levar ao tambor.`);
@@ -431,72 +767,169 @@
       } else if (st.id === 'truckDock') {
         if (missionIndex === 6 && packedCount >= 10) { missionIndex = 7; sentToTruck = true; coins += 35; say('Caminhão XLP', `Lote de ${selectedProduct} carregado no caminhão! Volte ao Supervisor para concluir o turno.`); }
         else { triggerRhReprimand('Tentou enviar para o caminhão sem completar a embalagem'); return; }
-      } else if (st.id === 'maintBench') say('Bancada de Manutenção', 'Ferramentas de remoção de rebarbas, sensores e travas verificados.');
+      } else if (st.id === 'maintBench') {
+        say('Bancada de Manutenção', 'Ferramentas de remoção de rebarbas, sensores e travas verificados.');
+      }
       updateHud();
     }
+
     function draw() {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, vw, vh);
-      const scale = Math.max(0.55, Math.min(vw / 1100, vh / 720));
-      const viewW = vw / scale, viewH = vh / scale;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, vw, vh);
+
+      // Escala que funciona bem tanto no celular em pé quanto deitado
+      const isPortrait = vh > vw;
+      const baseScale = isPortrait ? Math.max(0.62, vw / 820) : Math.max(0.75, Math.min(vw / 1180, vh / 680));
+      const viewW = vw / baseScale;
+      const viewH = vh / baseScale;
       const maxCamX = Math.max(0, W - viewW);
       const maxCamY = Math.max(0, H - viewH);
-      if (!camReady) {
+
+      if (!camInit) {
         cam.x = Math.max(0, Math.min(maxCamX, player.x - viewW / 2));
         cam.y = Math.max(0, Math.min(maxCamY, player.y - viewH / 2));
-        camReady = true;
+        camInit = true;
       } else {
-        // Acompanha nas laterais e vertical quando chega perto das bordas sem sumir com o personagem
-        const edgeX = Math.min(viewW * 0.22, 180);
-        const edgeY = Math.min(viewH * 0.22, 140);
-        const sx = player.x - cam.x;
-        const sy = player.y - cam.y;
-        if (sx < edgeX) cam.x -= (edgeX - sx);
-        if (sx > viewW - edgeX) cam.x += (sx - (viewW - edgeX));
-        if (sy < edgeY) cam.y -= (edgeY - sy);
-        if (sy > viewH - edgeY) cam.y += (sy - (viewH - edgeY));
+        // CÂMERA QUE SEGUE DE VERDADE QUANDO O JOGADOR ENCOSTA NA BORDA DA TELA (4 LADOS)
+        const padX = Math.min(viewW * 0.14, 115);
+        const padY = Math.min(viewH * 0.16, 105);
+        const screenX = player.x - cam.x;
+        const screenY = player.y - cam.y;
+
+        if (screenX < padX) cam.x -= (padX - screenX) * 1.15;
+        if (screenX > viewW - padX) cam.x += (screenX - (viewW - padX)) * 1.15;
+        if (screenY < padY) cam.y -= (padY - screenY) * 1.15;
+        if (screenY > viewH - padY) cam.y += (screenY - (viewH - padY)) * 1.15;
+
         cam.x = Math.max(0, Math.min(maxCamX, cam.x));
         cam.y = Math.max(0, Math.min(maxCamY, cam.y));
       }
-      ctx.scale(dpr * scale, dpr * scale);
-      ctx.translate(-snap(cam.x), -snap(cam.y));
-      drawFactory(); drawStations();
-      const actors = [...npcs.map(n => ({ y: n.y, fn: () => drawCharacter(n.x, n.y, n.shirt, n.hair, n.cap, n.glasses, 0, n.badge) })), { y: player.y, fn: () => drawCharacter(player.x, player.y, '#e8dfd1', '#5c3622', false, false, player.walk, '') }];
-      if (rhInspector.active) actors.push({ y: rhInspector.y, fn: () => drawCharacter(rhInspector.x, rhInspector.y, '#242933', '#1c1d21', false, true, 0.2, 'RH!') });
-      actors.sort((a, b) => a.y - b.y); actors.forEach(a => a.fn());
+
+      ctx.scale(dpr * baseScale, dpr * baseScale);
+      ctx.translate(-cam.x, -cam.y);
+
+      drawFactory();
+      drawStations();
+
+      // Partículas de ação/alerta
+      for (const p of particles) {
+        ctx.globalAlpha = Math.max(0, p.life / p.max);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const actors = [
+        ...npcs.map(n => ({ y: n.y, fn: () => drawChar(n.x, n.y, n.shirt, n.hair, n.cap, n.glasses, 0, n.badge) })),
+        { y: player.y, fn: () => drawChar(player.x, player.y, '#ede4d5', '#5e3722', false, false, player.walk, '') }
+      ];
+      if (rhInspector.active) {
+        actors.push({ y: rhInspector.y, fn: () => drawChar(rhInspector.x, rhInspector.y, '#242933', '#1c1d21', false, true, 0.25, 'RH!') });
+      }
+      actors.sort((a, b) => a.y - b.y);
+      actors.forEach(a => a.fn());
+
       const near = nearestInteractable();
-      if (near) { rBox(near.obj.x - 86, near.obj.y + 36, 172, 22, 0, 'rgba(18,22,29,0.94)', '#ffd252', 2); pText(`[E] ${near.obj.name}`, near.obj.x, near.obj.y + 51, 10, '#ffe285'); }
+      if (near) {
+        rBox(near.obj.x - 90, near.obj.y + 38, 180, 24, 7, 'rgba(18,22,30,0.92)', '#ffd859', 2);
+        pText(`[AÇÃO] ${near.obj.name}`, near.obj.x, near.obj.y + 54, 11, '#ffe48a');
+      }
     }
+
     let lastTs = performance.now();
     function loop(ts) {
-      const dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
+      lastTs = ts;
+
       if (started && !gameOver) {
         let dx = 0, dy = 0;
-        if (keys.left || keys.ArrowLeft || keys.a) dx--; if (keys.right || keys.ArrowRight || keys.d) dx++;
-        if (keys.up || keys.ArrowUp || keys.w) dy--; if (keys.down || keys.ArrowDown || keys.s) dy++;
-        if (dx || dy) { const len = Math.hypot(dx, dy) || 1; player.x += (dx / len) * player.speed * dt; player.y += (dy / len) * player.speed * dt; resolveCollisions(); player.walk += dt * 12; }
-        else player.walk = 0;
-        if (rhInspector.active) { const ang = Math.atan2(rhInspector.targetY - rhInspector.y, rhInspector.targetX - rhInspector.x), dist = Math.hypot(rhInspector.targetX - rhInspector.x, rhInspector.targetY - rhInspector.y); if (dist > 8) { rhInspector.x += Math.cos(ang) * 280 * dt; rhInspector.y += Math.sin(ang) * 280 * dt; } }
-        if (!dialogue && missionIndex >= 1 && missionIndex <= 4) { cycleTimer -= dt; if (cycleTimer <= 0) triggerRhReprimand('Tempo do ciclo da injetora estourou sem concluir a etapa'); }
+        if (keys.left || keys.ArrowLeft || keys.a) dx--;
+        if (keys.right || keys.ArrowRight || keys.d) dx++;
+        if (keys.up || keys.ArrowUp || keys.w) dy--;
+        if (keys.down || keys.ArrowDown || keys.s) dy++;
+
+        if (dx || dy) {
+          const len = Math.hypot(dx, dy) || 1;
+          player.x += (dx / len) * player.speed * dt;
+          player.y += (dy / len) * player.speed * dt;
+          resolveCollisions();
+          player.walk += dt * 13;
+        } else {
+          player.walk = 0;
+        }
+
+        if (rhInspector.active) {
+          const ang = Math.atan2(rhInspector.targetY - rhInspector.y, rhInspector.targetX - rhInspector.x);
+          const dist = Math.hypot(rhInspector.targetX - rhInspector.x, rhInspector.targetY - rhInspector.y);
+          if (dist > 8) { rhInspector.x += Math.cos(ang) * 320 * dt; rhInspector.y += Math.sin(ang) * 320 * dt; }
+        }
+
+        if (!dialogue && missionIndex >= 1 && missionIndex <= 4) {
+          cycleTimer -= dt;
+          if (cycleTimer <= 0) triggerRhReprimand('Tempo do ciclo da injetora estourou sem concluir a etapa');
+        }
+
         const pct = Math.max(0, Math.min(100, (cycleTimer / cycleMax) * 100));
-        document.getElementById('cycleFill').style.width = pct + '%';
-        document.getElementById('timerText').textContent = (missionIndex >= 1 && missionIndex <= 4) ? Math.ceil(cycleTimer) + 's' : '--s';
+        document.getElementById('timerFill').style.width = pct + '%';
+        document.getElementById('timerText').textContent =
+          (missionIndex >= 1 && missionIndex <= 4) ? Math.ceil(cycleTimer) + 's' : '--s';
       }
-      draw(); requestAnimationFrame(loop);
+
+      particles = particles.filter(p => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+        return p.life > 0;
+      });
+
+      draw();
+      requestAnimationFrame(loop);
     }
-    document.getElementById('startBtn').onclick = () => { started = true; document.getElementById('startScreen').classList.add('hidden'); document.getElementById('hud').classList.remove('hidden'); renderHearts(); updateHud(); say('Função Sorteada', `Sua função neste turno é: "${assignedRole}". Produto selecionado: ${selectedProduct}. Fale com o Supervisor para começar!`); };
-    document.getElementById('restartBtn').onclick = () => { document.getElementById('gameOverScreen').classList.add('hidden'); rollRole(); resetAllState(); };
+
+    document.getElementById('startBtn').onclick = () => {
+      started = true;
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('hud').classList.remove('hidden');
+      renderHearts(); updateHud();
+      say('Função Sorteada', `Sua função neste turno é: "${assignedRole}". Produto selecionado: ${selectedProduct}. Fale com o Supervisor para começar!`);
+    };
+
+    document.getElementById('restartBtn').onclick = () => {
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      rollRole(); resetAllState();
+    };
+
     document.getElementById('action').onclick = interact;
     document.getElementById('closeDialog').onclick = closeDialog;
-    document.getElementById('mapBtn').onclick = () => { const el = document.getElementById('missionBox'); el.style.display = el.style.display === 'none' ? 'block' : 'none'; };
-    document.getElementById('snackBtn').onclick = () => { say('Hora do Lanche & Resíduos', snackTimeActive ? 'A hora do lanche gerou resíduos! Descarte recicláveis na lixeira verde e não recicláveis na vermelha.' : 'A hora do lanche ativa junto com a etapa de separação de resíduos (missão 4).'); };
-    document.querySelectorAll('[data-dir]').forEach(b => { const k = b.dataset.dir; b.onpointerdown = e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); }; ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => { keys[k] = false; })); });
-    addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault(); keys[k] = true; if (k === 'e' || k === 'enter' || k === ' ') interact(); });
+
+    document.getElementById('mapBtn').onclick = () => {
+      const el = document.getElementById('missionBox');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    };
+
+    document.getElementById('snackBtn').onclick = () => {
+      say('Hora do Lanche & Resíduos', snackTimeActive
+        ? 'A hora do lanche gerou resíduos! Descarte recicláveis na lixeira verde e não recicláveis na vermelha.'
+        : 'A hora do lanche & Resíduos', snackTimeActive
+        ? 'A hora do lanche gerou resíduos! Descarte recicláveis na lixeira verde e não recicláveis na vermelha.'
+        : 'A hora do lanche ativa junto com a etapa de separação de resíduos (missão 4).');
+    };
+
+    document.querySelectorAll('[data-dir]').forEach(b => {
+      const k = b.dataset.dir;
+      b.onpointerdown = e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); };
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => { keys[k] = false; }));
+    });
+
+    addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+      keys[k] = true;
+      if (k === 'e' || k === 'enter' || k === ' ') interact();
+    });
     addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
     addEventListener('blur', () => { keys = {}; });
+
     renderHearts(); updateHud(); requestAnimationFrame(loop);
   })();
   </script>
 </body>
 </html>
-
-  
