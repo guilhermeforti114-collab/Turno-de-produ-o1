@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#141a22">
-  <title>Turno de Produção — XLP Arcade</title>
+  <meta name="theme-color" content="#161c24">
+  <title>Turno de Produção — XLP - SENAI</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
       margin: 0; width: 100%; height: 100%; overflow: hidden;
-      background: #12171e; color: #f6f8fb;
+      background: #161c24; color: #f5f7fa;
       font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
       touch-action: none;
     }
@@ -17,87 +17,88 @@
 
     #hud { position: fixed; inset: 0; pointer-events: none; }
 
-    /* TOPO ORGANIZADO: CORAÇÕES LÁ EM CIMA + MOEDAS + OBJETIVO DISCRETO */
+    /* TOPO LIMPO: CORAÇÕES LÁ EM CIMA + MISSÕES À ESQUERDA + OBJETIVO COMPACTO */
     .topBar {
       position: absolute; top: 8px; left: 8px; right: 8px;
       display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
     }
 
-    .leftTopCluster { display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
+    .leftCluster { display: flex; flex-direction: column; gap: 5px; pointer-events: auto; }
 
-    .heartsTop {
-      display: inline-flex; align-items: center; gap: 4px; width: fit-content;
-      background: rgba(18, 23, 31, 0.9);
-      border: 2px solid #ff6b63; border-radius: 10px;
-      padding: 4px 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+    .heartsBar {
+      display: inline-flex; align-items: center; gap: 3px; width: fit-content;
+      background: rgba(24, 24, 26, 0.9);
+      border: 2px solid #ff665e; border-radius: 10px;
+      padding: 3px 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.45);
     }
-    .heart { font-size: 15px; transition: transform 0.2s, filter 0.2s; }
-    .heart.lost { filter: grayscale(1); opacity: 0.3; transform: scale(0.82); }
+    .heart { font-size: 14px; transition: transform 0.2s, filter 0.2s; }
+    .heart.lost { filter: grayscale(1); opacity: 0.3; transform: scale(0.8); }
 
     .missionBox {
-      width: min(215px, 44vw);
-      background: rgba(20, 25, 34, 0.88);
-      border: 2px solid #6c7d96; border-radius: 11px;
-      box-shadow: 0 5px 14px rgba(0,0,0,0.45); overflow: hidden;
+      width: min(210px, 43vw);
+      background: rgba(34, 32, 31, 0.9);
+      border: 2px solid #7d7466; border-radius: 11px;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.5); overflow: hidden;
     }
     .missionHead {
       display: flex; align-items: center; gap: 6px;
-      padding: 6px 8px; background: rgba(12, 16, 22, 0.92);
+      padding: 5px 8px; background: rgba(18, 17, 17, 0.92);
       border-bottom: 1px solid rgba(255,255,255,0.14);
       font-size: 11px; font-weight: 900; color: #ffd454;
     }
     .badgeExcl {
-      width: 18px; height: 18px; border-radius: 50%;
+      width: 17px; height: 17px; border-radius: 50%;
       background: linear-gradient(180deg, #ffd859, #e39614);
-      color: #1c1304; font-size: 12px; font-weight: 900;
+      color: #1c1304; font-size: 11px; font-weight: 900;
       display: grid; place-items: center;
     }
-    .rolePill {
+    .roleTag {
       margin-left: auto; font-size: 8.5px; padding: 2px 5px;
-      border-radius: 5px; background: #2c629e; color: #fff;
-      max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      border-radius: 5px; background: #2d629e; color: #fff;
+      max-width: 68px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    #missions { padding: 4px 7px 6px; max-height: 24vh; overflow-y: auto; }
+    #missions { padding: 4px 7px 6px; max-height: 22vh; overflow-y: auto; }
     .mRow {
-      font-size: 10px; line-height: 1.25; padding: 3px 1px;
-      border-top: 1px solid rgba(255,255,255,0.08); color: #e4eaf2;
+      font-size: 9.5px; line-height: 1.24; padding: 3px 1px;
+      border-top: 1px solid rgba(255,255,255,0.08); color: #eceee9;
     }
     .mRow:first-child { border-top: 0; }
-    .mRow.done { color: #7ce398; text-decoration: line-through; opacity: 0.72; }
+    .mRow.done { color: #8be099; text-decoration: line-through; opacity: 0.72; }
     .mRow.cur { color: #ffe285; font-weight: 900; }
 
-    /* OBJETIVO COMPACTO NO CANTO SUPERIOR / LATERAL SEM POLUIR */
-    .goalCard {
-      width: min(210px, 46vw);
-      background: rgba(20, 25, 34, 0.88);
-      border: 2px solid #ffd454; border-radius: 10px;
-      padding: 5px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    .rightCluster {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
       pointer-events: auto;
     }
-    .goalCard b {
+    .goalBox {
+      width: min(215px, 46vw);
+      background: rgba(24, 28, 36, 0.9);
+      border: 2px solid #ffd454; border-radius: 10px;
+      padding: 5px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    }
+    .goalBox b {
       display: block; font-size: 10px; color: #ffd86b;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .goalCard small {
-      display: block; font-size: 8.5px; color: #cfd8e3; margin-top: 1px;
+    .goalBox small {
+      display: block; font-size: 8.5px; color: #d5dde8; margin-top: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .goalMeta {
+    .metaLine {
       display: flex; justify-content: space-between; align-items: center;
       margin-top: 4px; font-size: 9.5px; font-weight: 900;
     }
-    .coinsVal { color: #ffe07d; }
-    .timerBar { height: 5px; background: #2a3342; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+    .coinsTxt { color: #ffe285; }
+    .timerTrack { height: 5px; background: #2a3342; border-radius: 3px; margin-top: 4px; overflow: hidden; }
     .timerFill { height: 100%; width: 100%; background: linear-gradient(90deg, #4cd97b, #ffd454, #ff5449); }
 
-    .rightTopCluster { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; pointer-events: auto; }
-    .utilBtns { display: flex; gap: 4px; }
-    .utilBtn {
-      background: rgba(26, 33, 45, 0.92); color: #fff;
+    .hudActionsRow { display: flex; gap: 4px; }
+    .smallBtn {
+      background: rgba(28, 34, 46, 0.92); color: #fff;
       border: 1.5px solid #7587a1; border-radius: 8px;
-      padding: 4px 7px; font-size: 9.5px; font-weight: 900; cursor: pointer;
+      padding: 4px 8px; font-size: 9.5px; font-weight: 900; cursor: pointer;
     }
-    .utilBtn:active { transform: scale(0.95); }
+    .smallBtn:active { transform: scale(0.95); }
 
     /* DIÁLOGO */
     .dialogBox {
@@ -121,7 +122,7 @@
       padding: 6px 13px; font-weight: 900; font-size: 11px; cursor: pointer;
     }
 
-    /* ANALÓGICO / D-PAD E AÇÃO BEM GRANDES E LIVRES DE QUALQUER SOBREPOSIÇÃO */
+    /* CONTROLES GRANDES E SEM SOBREPOSIÇÃO */
     .pad {
       position: absolute; left: 12px; bottom: 12px;
       display: grid;
@@ -152,23 +153,16 @@
     .actionBtn span { font-size: 11px; opacity: 0.85; }
     .actionBtn:active { transform: scale(0.95); }
 
-    /* MODO DEITADO (LANDSCAPE): AJUSTA BOTÕES E HUD PARA TELA LARGA */
     @media (orientation: landscape) and (max-height: 540px) {
       .missionBox { width: 195px; }
-      #missions { max-height: 32vh; }
-      .heartsBox, .heartsTop { padding: 3px 7px; }
+      #missions { max-height: 30vh; }
       .heart { font-size: 13px; }
-      .pad {
-        left: 16px; bottom: 10px;
-        grid-template-columns: 52px 52px 52px;
-        grid-template-rows: 44px 44px 44px;
-      }
+      .pad { left: 16px; bottom: 10px; grid-template-columns: 52px 52px 52px; grid-template-rows: 44px 44px 44px; }
       .pad button { font-size: 18px; }
       .actionBtn { right: 16px; bottom: 12px; width: 104px; height: 68px; font-size: 14px; }
       .dialogBox { bottom: 18px; width: min(460px, 52vw); }
     }
 
-    /* MENU INICIAL E GAME OVER */
     #startScreen, #gameOverScreen {
       position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 14px;
       background: radial-gradient(circle at 50% 35%, #2f4257, #10151c 78%);
@@ -209,31 +203,31 @@
 
   <div id="hud" class="hidden">
     <div class="topBar">
-      <div class="leftTopCluster">
-        <div class="heartsTop" id="heartsBox" aria-label="Vidas"></div>
+      <div class="leftCluster">
+        <div class="heartsBar" id="heartsBox" aria-label="Vidas"></div>
         <div class="missionBox" id="missionBox">
           <div class="missionHead">
             <span class="badgeExcl">!</span>
             <span>MISSÕES</span>
-            <span class="rolePill" id="roleTag">FUNÇÃO</span>
+            <span class="roleTag" id="roleTag">FUNÇÃO</span>
           </div>
           <div id="missions"></div>
         </div>
       </div>
 
-      <div class="rightTopCluster">
-        <div class="goalCard">
+      <div class="rightCluster">
+        <div class="goalBox">
           <b id="objective">Converse com o Supervisor</b>
           <small id="subobjective">Aproxime-se e aperte AÇÃO.</small>
-          <div class="goalMeta">
-            <span class="coinsVal">🪙 <span id="coins">0225</span></span>
+          <div class="metaLine">
+            <span class="coinsTxt">🪙 <span id="coins">0225</span></span>
             <span>⏱ <span id="timerText">--s</span></span>
           </div>
-          <div class="timerBar"><div class="timerFill" id="timerFill"></div></div>
+          <div class="timerTrack"><div class="timerFill" id="timerFill"></div></div>
         </div>
-        <div class="utilBtns">
-          <button class="utilBtn" id="snackBtn">🥪 LANCHE</button>
-          <button class="utilBtn" id="mapBtn">📋 MISSÕES</button>
+        <div class="hudActionsRow">
+          <button class="smallBtn" id="snackBtn">🥪 LANCHE</button>
+          <button class="smallBtn" id="mapBtn">📋 MISSÕES</button>
         </div>
       </div>
     </div>
@@ -299,7 +293,15 @@
     }
     addEventListener('resize', resize); resize();
 
-    const W = 2500, H = 1700, INK = '#1d2229';
+    // Dimensões do mundo baseadas na ilustração da fábrica XLP - SENAI
+    const W = 1920, H = 1080, INK = '#21252b';
+
+    // Carrega a imagem enviada (salve como "fabrica-xlp.png" na mesma pasta do HTML)
+    const bgImg = new Image();
+    let bgLoaded = false;
+    bgImg.onload = () => { bgLoaded = true; };
+    bgImg.src = 'fabrica-xlp.png';
+
     const ROLES = [
       'Remover rebarbas da peça',
       'Injetar 3 peças e retirar as borras',
@@ -314,10 +316,9 @@
     let snackTimeActive = false, snackTrashReady = false, packedCount = 0, sentToTruck = false;
     let cycleTimer = 28; const cycleMax = 28;
 
-    const player = { x: 1220, y: 860, r: 17, speed: 270, walk: 0, facing: 'down' };
+    const player = { x: 960, y: 520, r: 16, speed: 250, walk: 0 };
     let cam = { x: 0, y: 0 }, camInit = false, keys = {}, particles = [];
-
-    const rhInspector = { active: false, x: 1620, y: 490, targetX: 1220, targetY: 860 };
+    const rhInspector = { active: false, x: 1260, y: 270, targetX: 960, targetY: 520 };
 
     const missions = [
       { title: 'Converse com o Supervisor', desc: 'Fale com o Supervisor perto da entrada.' },
@@ -330,25 +331,26 @@
       { title: 'Conclua o turno com o Supervisor', desc: 'Volte ao Supervisor para encerrar o turno.' }
     ];
 
+    // Colisões alinhadas com a cena da fábrica XLP - SENAI
     const solids = [
-      { x: 0, y: 0, w: W, h: 360 }, { x: 0, y: H - 60, w: W, h: 60 },
-      { x: 0, y: 0, w: 70, h: H }, { x: W - 70, y: 0, w: 70, h: H },
-      { x: 1530, y: 360, w: 180, h: 165 }, // Porta RECURSOS HUMANOS
-      { x: 1810, y: 630, w: 380, h: 180 }, // Injetora 01
-      { x: 1280, y: 650, w: 240, h: 160 }, // Injetora 02
-      { x: 1590, y: 920, w: 100, h: 100 }, // Tambor de Borras
-      { x: 660, y: 780, w: 160, h: 150 },  // Triturador
-      { x: 860, y: 790, w: 125, h: 125 },  // Recipiente Grande Reuso
-      { x: 1780, y: 1060, w: 90, h: 115 }, // Recicláveis
-      { x: 1900, y: 1060, w: 90, h: 115 }, // Não Recicláveis
-      { x: 1980, y: 1330, w: 410, h: 130 }, // Esteira Embalagem
-      { x: 1360, y: 1380, w: 280, h: 155 }, // Caminhão Expedição
-      { x: 360, y: 1100, w: 230, h: 145 }  // Bancada Manutenção
+      { x: 0, y: 0, w: W, h: 255 },          // Fachada / portão XLP - SENAI
+      { x: 0, y: H - 45, w: W, h: 45 },        // Borda inferior
+      { x: 0, y: 0, w: 50, h: H },            // Borda esquerda
+      { x: W - 50, y: 0, w: 50, h: H },       // Borda direita
+      { x: 1210, y: 240, w: 125, h: 90 },     // Porta RECURSOS HUMANOS ao lado das injetoras
+      { x: 1360, y: 310, w: 460, h: 220 },    // Injetora 01 azul cercada
+      { x: 350, y: 560, w: 290, h: 220 },     // Setor manutenção / triturador
+      { x: 820, y: 690, w: 240, h: 170 },     // Empilhadeira amarela com caixas
+      { x: 1240, y: 680, w: 110, h: 85 },     // Caixas azuis / borras
+      { x: 1380, y: 740, w: 340, h: 110 },    // Lixeiras coloridas
+      { x: 1470, y: 890, w: 410, h: 130 },    // Esteira embaixo à direita / caminhão
+      { x: 40, y: 810, w: 560, h: 230 }       // Cabine inferior esquerda
     ];
 
+    // NPCs posicionados sobre os pontos da cena
     const npcs = [
       {
-        id: 'supervisor', name: 'Supervisor Marcos', x: 1480, y: 555,
+        id: 'supervisor', name: 'Supervisor Marcos', x: 1165, y: 295,
         shirt: '#3768a3', hair: '#2b1b12', glasses: true, badge: '!',
         lines: [
           'Bem-vindo à XLP - SENAI! Hoje você atua na linha de injeção plástica, reuso de borras, resíduos e expedição.',
@@ -357,7 +359,7 @@
         ]
       },
       {
-        id: 'operator', name: 'Operadora Bianca', x: 980, y: 585,
+        id: 'operator', name: 'Operadora Bianca', x: 565, y: 355,
         shirt: '#ebe6dc', hair: '#663620', glasses: false, badge: '...',
         lines: [
           'Fique de olho no tempo do ciclo da injetora: retire as borras, remova rebarbas e não misture resíduos.',
@@ -365,7 +367,7 @@
         ]
       },
       {
-        id: 'technician', name: 'Técnico Paulo', x: 475, y: 1045,
+        id: 'technician', name: 'Técnico Paulo', x: 295, y: 780,
         shirt: '#3973ad', hair: '#2b1e16', cap: '#245282', badge: '🔧',
         lines: [
           'Manutenção preventiva em dia! Verifique sensores, travas do molde e triturador antes de operar.',
@@ -373,26 +375,27 @@
         ]
       },
       {
-        id: 'shipping', name: 'Motorista / Expedição Carla', x: 1690, y: 1435,
+        id: 'shipping', name: 'Motorista / Expedição Carla', x: 1370, y: 845,
         shirt: '#3973ad', hair: '#3b2419', cap: '#245282', badge: '📦',
         lines: [
-          'O caminhão está na doca aguardando o lote embalado de baldes, copos ou garrafas plásticas!',
-          'Carga conferida e embarcada no caminhão com sucesso!'
+          'O caminhão/expedição está pronto para receber o lote embalado de baldes, copos ou garrafas plásticas!',
+          'Carga conferida e embarcada com sucesso!'
         ]
       }
     ];
 
+    // Estações interativas posicionadas sobre os elementos da ilustração
     const stations = [
-      { id: 'inject1', name: 'INJETORA 01', x: 2000, y: 810 },
-      { id: 'inject2', name: 'INJETORA 02', x: 1400, y: 810 },
-      { id: 'scrapDrum', name: 'TAMBOR DE BORRAS', x: 1640, y: 1020 },
-      { id: 'grinder', name: 'TRITURADOR', x: 740, y: 930 },
-      { id: 'bigBin', name: 'RECIPIENTE GRANDE (REUSO)', x: 922, y: 915 },
-      { id: 'recycleBin', name: 'LIXEIRA RECICLÁVEIS', x: 1825, y: 1175 },
-      { id: 'nonRecycleBin', name: 'LIXEIRA NÃO RECICLÁVEIS', x: 1945, y: 1175 },
-      { id: 'packBelt', name: 'EMBALAGEM', x: 2185, y: 1460 },
-      { id: 'truckDock', name: 'CAMINHÃO EXPEDIÇÃO', x: 1500, y: 1535 },
-      { id: 'maintBench', name: 'BANCADA MANUTENÇÃO', x: 475, y: 1245 }
+      { id: 'inject1', name: 'INJETORA 01', x: 1520, y: 545 },
+      { id: 'inject2', name: 'INJETORA 02', x: 1710, y: 465 },
+      { id: 'scrapDrum', name: 'TAMBOR DE BORRAS', x: 1295, y: 655 },
+      { id: 'grinder', name: 'TRITURADOR', x: 520, y: 675 },
+      { id: 'bigBin', name: 'RECIPIENTE GRANDE (REUSO)', x: 640, y: 745 },
+      { id: 'recycleBin', name: 'LIXEIRA RECICLÁVEIS', x: 1430, y: 715 },
+      { id: 'nonRecycleBin', name: 'LIXEIRA NÃO RECICLÁVEIS', x: 1620, y: 715 },
+      { id: 'packBelt', name: 'EMBALAGEM / ESTEIRA', x: 1660, y: 925 },
+      { id: 'truckDock', name: 'CAMINHÃO / EXPEDIÇÃO', x: 1240, y: 955 },
+      { id: 'maintBench', name: 'BANCADA MANUTENÇÃO', x: 420, y: 760 }
     ];
 
     function spawnBurst(x, y, color, count = 10) {
@@ -455,9 +458,9 @@
       spawnBurst(player.x, player.y - 20, '#ff594f', 14);
 
       rhInspector.active = true;
-      rhInspector.x = 1615;
-      rhInspector.y = 485;
-      rhInspector.targetX = player.x + 44;
+      rhInspector.x = 1270;
+      rhInspector.y = 285;
+      rhInspector.targetX = player.x + 42;
       rhInspector.targetY = player.y;
 
       say(
@@ -480,7 +483,7 @@
       scrapCollected = false; scrapInDrum = false; scrapGround = false; recycledStored = 0;
       recycleBinDone = false; nonRecycleBinDone = false; snackTimeActive = false; snackTrashReady = false;
       packedCount = 0; sentToTruck = false; cycleTimer = cycleMax; particles = [];
-      player.x = 1220; player.y = 860; camInit = false; gameOver = false; rhInspector.active = false;
+      player.x = 960; player.y = 520; camInit = false; gameOver = false; rhInspector.active = false;
       closeDialog(); renderHearts(); updateHud();
     }
 
@@ -506,188 +509,92 @@
       document.getElementById('subobjective').textContent =
         missionIndex >= missions.length ? 'Tudo concluído!' : cur.desc;
       document.getElementById('coins').textContent = String(coins).padStart(4, '0');
-    }    function rBox(x, y, w, h, r, fill, stroke = INK, lw = 3) {
+    }    function rBox(x, y, w, h, r, fill, stroke = INK, lw = 2.5) {
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
       if (fill) { ctx.fillStyle = fill; ctx.fill(); }
       if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
     }
 
-    function pText(t, x, y, size = 15, color = '#fff', align = 'center', weight = '900') {
+    function pText(t, x, y, size = 13, color = '#fff', align = 'center', weight = '900') {
       ctx.font = `${weight} ${size}px "Trebuchet MS", sans-serif`;
       ctx.textAlign = align;
       ctx.strokeStyle = INK;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 3.5;
       ctx.lineJoin = 'round';
       ctx.strokeText(t, x, y);
       ctx.fillStyle = color;
       ctx.fillText(t, x, y);
     }
 
-    function drawBox3D(x, y, w, h, d = 14) {
-      ctx.beginPath();
-      ctx.moveTo(x, y); ctx.lineTo(x + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w, y);
-      ctx.closePath(); ctx.fillStyle = '#e5b87b'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(x + w, y); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y + h - d); ctx.lineTo(x + w, y + h);
-      ctx.closePath(); ctx.fillStyle = '#b37f44'; ctx.fill(); ctx.stroke();
-
-      rBox(x, y, w, h, 3, '#cfa165', INK, 2.5);
-      ctx.fillStyle = '#f0d5a8'; ctx.fillRect(x + w * 0.42, y + 2, w * 0.16, h - 4);
-    }
-
-    function drawPipes(x, y, len = 260) {
-      rBox(x, y, len, 20, 7, '#8d97a3', INK, 3);
-      rBox(x + len - 20, y, 20, 110, 7, '#8d97a3', INK, 3);
-      rBox(x + 170, y + 20, 14, 130, 5, '#ebb734', INK, 2.5);
-      rBox(x + 200, y + 20, 14, 130, 5, '#ebb734', INK, 2.5);
-    }
-
-    function drawFactory() {
-      // Piso industrial com profundidade e juntas
-      ctx.fillStyle = '#b4b9c0';
-      ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 2;
-      for (let x = 70; x < W - 70; x += 120) { ctx.beginPath(); ctx.moveTo(x, 360); ctx.lineTo(x, H - 60); ctx.stroke(); }
-      for (let y = 360; y < H - 60; y += 110) { ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(W - 70, y); ctx.stroke(); }
-
-      // Faixas amarelas e zebrados de segurança
-      ctx.strokeStyle = '#e8b938'; ctx.lineWidth = 8;
-      ctx.strokeRect(130, 415, W - 260, H - 515);
-
-      // Parede superior com vigas e iluminação
-      rBox(0, 0, W, 360, 0, '#6e7885', INK, 4);
-      for (let x = 0; x < W; x += 280) rBox(x, 0, 26, 360, 0, '#515a66', INK, 3);
-
-      // Placa principal XLP - SENAI e portão azul
-      rBox(1010, 28, 440, 74, 8, '#e6e9ed', INK, 4);
-      pText('XLP -', 1155, 78, 38, '#2f353d');
-      pText('SENAI', 1315, 78, 38, '#c7342b');
-
-      rBox(1080, 125, 300, 235, 5, '#426b9c', INK, 4);
-      for (let gy = 155; gy < 325; gy += 28) { ctx.strokeStyle = '#2a486b'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(1085, gy); ctx.lineTo(1375, gy); ctx.stroke(); }
-      rBox(1080, 322, 300, 38, 0, '#e8b638', INK, 3);
-
-      // Porta marrom ao lado das injetoras com placa "RECURSOS HUMANOS"
-      rBox(1530, 360, 180, 165, 6, '#6e472b', INK, 4);
-      rBox(1542, 376, 156, 86, 4, '#593820', INK, 2.5);
-      rBox(1536, 366, 168, 44, 5, '#fff3cf', INK, 2.5);
-      pText('RECURSOS', 1620, 385, 14, '#362010');
-      pText('HUMANOS', 1620, 402, 14, '#362010');
-      ctx.fillStyle = '#ffd454'; ctx.beginPath(); ctx.arc(1690, 450, 6, 0, Math.PI * 2); ctx.fill();
-
-      // Janelas da sala de controle à esquerda
-      for (const jx of [150, 440, 730]) {
-        rBox(jx, 85, 225, 170, 6, '#9bc4d9', INK, 3);
-        ctx.fillStyle = 'rgba(255,255,255,0.25)';
-        ctx.beginPath(); ctx.moveTo(jx + 14, 90); ctx.lineTo(jx + 60, 90); ctx.lineTo(jx + 22, 250); ctx.lineTo(jx - 6, 250); ctx.closePath(); ctx.fill();
+    function drawFactoryBase() {
+      if (bgLoaded) {
+        ctx.drawImage(bgImg, 0, 0, W, H);
+      } else {
+        // Fallback caso a imagem ainda não esteja no mesmo diretório
+        ctx.fillStyle = '#aeb3ba';
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 2;
+        for (let x = 50; x < W - 50; x += 96) { ctx.beginPath(); ctx.moveTo(x, 255); ctx.lineTo(x, H - 45); ctx.stroke(); }
+        for (let y = 255; y < H - 45; y += 90) { ctx.beginPath(); ctx.moveTo(50, y); ctx.lineTo(W - 50, y); ctx.stroke(); }
+        rBox(0, 0, W, 255, 0, '#6e7885', INK, 3);
+        rBox(760, 22, 400, 56, 6, '#e6e9ed', INK, 3);
+        pText('XLP - SENAI', 960, 58, 28, '#c7342b');
       }
 
-      // Tubulações industriais e empilhadeira decorativa
-      drawPipes(240, 560, 270);
-      drawPipes(2160, 260, 240);
-      drawBox3D(1080, 1180, 64, 44, 14);
-      drawBox3D(1148, 1180, 64, 44, 14);
-      drawBox3D(1112, 1134, 66, 44, 14);
+      // Porta marrom ao lado das injetoras com placa "RECURSOS HUMANOS"
+      rBox(1215, 215, 115, 110, 5, '#6e472b', INK, 3);
+      rBox(1220, 220, 105, 32, 4, '#fff3cf', INK, 2);
+      pText('RECURSOS', 1272, 234, 10, '#362010');
+      pText('HUMANOS', 1272, 246, 10, '#362010');
+
+      // Marcadores discretos das estações sobre a cena
+      rBox(1255, 622, 80, 24, 5, '#ffd454', INK, 2);
+      pText('BORRAS', 1295, 638, 10, '#1d2229');
+
+      rBox(595, 712, 90, 24, 5, '#4c7862', INK, 2);
+      pText(`REUSO (${recycledStored})`, 640, 728, 10, '#fff');
+
+      rBox(1605, 902, 110, 24, 5, '#505963', INK, 2);
+      pText(`EMBALA ${packedCount}/10`, 1660, 918, 10, '#ffd86b');
 
       // Resíduos da hora do lanche quando ativa
       if (snackTimeActive && snackTrashReady) {
-        rBox(1120, 1020, 46, 36, 7, '#f5f6f8', INK, 2.5);
-        pText('🥪', 1143, 1044, 18);
-        rBox(1180, 1028, 40, 30, 6, '#75b9ed', INK, 2.5);
-        pText('🥤', 1200, 1049, 16);
+        rBox(895, 640, 34, 26, 6, '#f5f6f8', INK, 2);
+        pText('🥪', 912, 658, 14);
+        rBox(936, 645, 30, 22, 5, '#75b9ed', INK, 2);
+        pText('🥤', 951, 661, 13);
       }
     }
 
-    function drawStations() {
-      // Injetora 01 (centro/direita)
-      rBox(1810, 630, 380, 180, 12, '#356ea8', INK, 4);
-      rBox(1835, 652, 155, 82, 7, '#89b7e0', INK, 3);
-      rBox(2015, 656, 135, 74, 7, '#2a313a', INK, 3);
-      ctx.fillStyle = '#55e082'; ctx.fillRect(2030, 672, 14, 14);
-      ctx.fillStyle = '#ffd454'; ctx.fillRect(2052, 672, 14, 14);
-      ctx.fillStyle = '#ff574d'; ctx.fillRect(2074, 672, 14, 14);
-      pText('INJETORA 01', 2000, 782, 18, '#ffd86b');
-
-      // Injetora 02
-      rBox(1280, 650, 240, 160, 12, '#437cb8', INK, 3.5);
-      rBox(1305, 672, 110, 64, 6, '#99c2e6', INK, 2.5);
-      pText('INJETORA 02', 1400, 775, 16, '#fff');
-
-      // Tambor de Borras identificado
-      rBox(1590, 920, 100, 100, 14, '#3b6ea1', INK, 3.5);
-      rBox(1582, 948, 116, 38, 5, '#ffd454', INK, 2.5);
-      pText('BORRAS', 1640, 973, 15, '#1d2229');
-
-      // Triturador de borras
-      rBox(660, 780, 160, 150, 10, '#7d8794', INK, 3.5);
-      rBox(688, 804, 104, 58, 6, '#373e47', INK, 2.5);
-      pText('TRITURADOR', 740, 902, 14, '#ffd86b');
-
-      // Recipiente Grande para armazenar e reutilizar borras
-      rBox(860, 790, 125, 125, 12, '#4c7862', INK, 3.5);
-      pText('REUSO', 922, 845, 15, '#fff');
-      pText(`(${recycledStored})`, 922, 870, 14, '#ffd86b');
-
-      // Coleta seletiva: Recicláveis e Não Recicláveis
-      rBox(1780, 1060, 90, 115, 10, '#3e994a', INK, 3.5);
-      pText('♻', 1825, 1118, 28, '#fff');
-      pText('RECICLÁVEL', 1825, 1158, 10, '#fff');
-
-      rBox(1900, 1060, 90, 115, 10, '#c93c34', INK, 3.5);
-      pText('🗑', 1945, 1118, 26, '#fff');
-      pText('NÃO REC.', 1945, 1158, 10, '#fff');
-
-      // Esteira de Embalagem com caixas
-      rBox(1980, 1330, 410, 130, 10, '#505963', INK, 3.5);
-      drawBox3D(2015, 1292, 60, 42, 14);
-      drawBox3D(2115, 1292, 60, 42, 14);
-      drawBox3D(2225, 1292, 60, 42, 14);
-      pText(`EMBALAGEM (${packedCount}/10)`, 2185, 1415, 16, '#ffd86b');
-
-      // Caminhão de Expedição
-      rBox(1360, 1380, 280, 155, 12, '#e6e9ed', INK, 3.5);
-      rBox(1575, 1396, 65, 124, 7, '#3870ab', INK, 3);
-      pText('CAMINHÃO XLP', 1475, 1465, 17, '#1d2229');
-
-      // Bancada de Manutenção
-      rBox(360, 1100, 230, 145, 10, '#8f653b', INK, 3.5);
-      drawBox3D(505, 1125, 62, 44, 12);
-      pText('MANUTENÇÃO', 455, 1175, 14, '#fff2cc');
-    }
-
-    function drawChar(x, y, shirt, hair, cap, glasses, bob = 0, label = '') {
+    function drawChibi(x, y, shirt, hair, cap, glasses, bob = 0, badge = '') {
       ctx.save();
-      ctx.translate(x, y + Math.sin(bob) * 3);
+      ctx.translate(x, y + Math.sin(bob) * 2.5);
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath(); ctx.ellipse(0, 30, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, 24, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
 
-      const legSwing = Math.sin(bob) * 5;
-      rBox(-15, 6 + legSwing * 0.4, 12, 20, 4, '#29384a', INK, 2.5);
-      rBox(3, 6 - legSwing * 0.4, 12, 20, 4, '#29384a', INK, 2.5);
-      rBox(-18, -23, 36, 32, 9, shirt, INK, 3);
+      rBox(-11, 5, 8, 15, 3, '#29384a', INK, 2);
+      rBox(3, 5, 8, 15, 3, '#29384a', INK, 2);
+      rBox(-14, -18, 28, 25, 7, shirt, INK, 2.5);
 
-      ctx.beginPath(); ctx.arc(0, -41, 20, 0, Math.PI * 2);
-      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -32, 16, 0, Math.PI * 2);
+      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
 
       ctx.fillStyle = '#1c2026';
-      ctx.beginPath(); ctx.arc(-6.5, -40, 2.8, 0, Math.PI * 2); ctx.arc(6.5, -40, 2.8, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.arc(-7.5, -41.2, 1, 0, Math.PI * 2); ctx.arc(5.5, -41.2, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-5, -31, 2.2, 0, Math.PI * 2); ctx.arc(5, -31, 2.2, 0, Math.PI * 2); ctx.fill();
 
       if (glasses) {
-        rBox(-14, -45, 11, 9, 2, 'rgba(255,255,255,0.22)', INK, 2);
-        rBox(3, -45, 11, 9, 2, 'rgba(255,255,255,0.22)', INK, 2);
+        rBox(-11, -35, 9, 7, 2, 'rgba(255,255,255,0.22)', INK, 1.8);
+        rBox(2, -35, 9, 7, 2, 'rgba(255,255,255,0.22)', INK, 1.8);
       }
 
-      ctx.beginPath(); ctx.arc(0, -47, 21, Math.PI * 0.88, Math.PI * 2.12);
-      ctx.fillStyle = cap || hair; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -37, 17, Math.PI * 0.88, Math.PI * 2.12);
+      ctx.fillStyle = cap || hair; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
 
-      if (label) {
-        const pulse = Math.sin(performance.now() / 160) * 3;
-        rBox(-22, -88 + pulse, 44, 25, 8, label === '!' ? '#ffd859' : '#ffffff', INK, 2.5);
-        pText(label, 0, -70 + pulse, 15, '#1d2229');
+      if (badge) {
+        const pulse = Math.sin(performance.now() / 160) * 2.5;
+        rBox(-17, -69 + pulse, 34, 20, 6, badge === '!' ? '#ffd859' : '#ffffff', INK, 2);
+        pText(badge, 0, -55 + pulse, 12, '#1d2229');
       }
       ctx.restore();
     }
@@ -705,7 +612,7 @@
     }
 
     function nearestInteractable() {
-      let best = null, bestDist = 150;
+      let best = null, bestDist = 115;
       for (const n of npcs) { const d = Math.hypot(n.x - player.x, n.y - player.y); if (d < bestDist) { bestDist = d; best = { kind: 'npc', obj: n }; } }
       for (const st of stations) { const d = Math.hypot(st.x - player.x, st.y - player.y); if (d < bestDist) { bestDist = d; best = { kind: 'station', obj: st }; } }
       return best;
@@ -730,7 +637,7 @@
           else if (missionIndex === 6) { triggerRhReprimand('Tentou despachar para o caminhão sem embalar as 10 peças'); return; }
           else say(n.name, n.lines[0]);
         } else say(n.name, n.lines[0]);
-        spawnBurst(n.x, n.y - 25, '#ffd859', 8);
+        spawnBurst(n.x, n.y - 20, '#ffd859', 8);
         updateHud(); return;
       }
 
@@ -777,11 +684,10 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, vw, vh);
 
-      // Escala que funciona bem tanto no celular em pé quanto deitado
-      const isPortrait = vh > vw;
-      const baseScale = isPortrait ? Math.max(0.62, vw / 820) : Math.max(0.75, Math.min(vw / 1180, vh / 680));
-      const viewW = vw / baseScale;
-      const viewH = vh / baseScale;
+      // CÂMERA BEM AFASTADA PARA ENXERGAR QUASE A FÁBRICA INTEIRA
+      const scale = Math.min(vw / 1650, vh / 920);
+      const viewW = vw / scale;
+      const viewH = vh / scale;
       const maxCamX = Math.max(0, W - viewW);
       const maxCamY = Math.max(0, H - viewH);
 
@@ -790,49 +696,44 @@
         cam.y = Math.max(0, Math.min(maxCamY, player.y - viewH / 2));
         camInit = true;
       } else {
-        // CÂMERA QUE SEGUE DE VERDADE QUANDO O JOGADOR ENCOSTA NA BORDA DA TELA (4 LADOS)
-        const padX = Math.min(viewW * 0.14, 115);
-        const padY = Math.min(viewH * 0.16, 105);
-        const screenX = player.x - cam.x;
-        const screenY = player.y - cam.y;
-
-        if (screenX < padX) cam.x -= (padX - screenX) * 1.15;
-        if (screenX > viewW - padX) cam.x += (screenX - (viewW - padX)) * 1.15;
-        if (screenY < padY) cam.y -= (padY - screenY) * 1.15;
-        if (screenY > viewH - padY) cam.y += (screenY - (viewH - padY)) * 1.15;
-
+        const edgeX = Math.min(viewW * 0.16, 130);
+        const edgeY = Math.min(viewH * 0.16, 110);
+        const sx = player.x - cam.x;
+        const sy = player.y - cam.y;
+        if (sx < edgeX) cam.x -= (edgeX - sx);
+        if (sx > viewW - edgeX) cam.x += (sx - (viewW - edgeX));
+        if (sy < edgeY) cam.y -= (edgeY - sy);
+        if (sy > viewH - edgeY) cam.y += (sy - (viewH - edgeY));
         cam.x = Math.max(0, Math.min(maxCamX, cam.x));
         cam.y = Math.max(0, Math.min(maxCamY, cam.y));
       }
 
-      ctx.scale(dpr * baseScale, dpr * baseScale);
+      ctx.scale(dpr * scale, dpr * scale);
       ctx.translate(-cam.x, -cam.y);
 
-      drawFactory();
-      drawStations();
+      drawFactoryBase();
 
-      // Partículas de ação/alerta
       for (const p of particles) {
         ctx.globalAlpha = Math.max(0, p.life / p.max);
         ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2); ctx.fill();
       }
       ctx.globalAlpha = 1;
 
       const actors = [
-        ...npcs.map(n => ({ y: n.y, fn: () => drawChar(n.x, n.y, n.shirt, n.hair, n.cap, n.glasses, 0, n.badge) })),
-        { y: player.y, fn: () => drawChar(player.x, player.y, '#ede4d5', '#5e3722', false, false, player.walk, '') }
+        ...npcs.map(n => ({ y: n.y, fn: () => drawChibi(n.x, n.y, n.shirt, n.hair, n.cap, n.glasses, 0, n.badge) })),
+        { y: player.y, fn: () => drawChibi(player.x, player.y, '#ede4d5', '#5e3722', false, false, player.walk, '') }
       ];
       if (rhInspector.active) {
-        actors.push({ y: rhInspector.y, fn: () => drawChar(rhInspector.x, rhInspector.y, '#242933', '#1c1d21', false, true, 0.25, 'RH!') });
+        actors.push({ y: rhInspector.y, fn: () => drawChibi(rhInspector.x, rhInspector.y, '#242933', '#1c1d21', false, true, 0.25, 'RH!') });
       }
       actors.sort((a, b) => a.y - b.y);
       actors.forEach(a => a.fn());
 
       const near = nearestInteractable();
       if (near) {
-        rBox(near.obj.x - 90, near.obj.y + 38, 180, 24, 7, 'rgba(18,22,30,0.92)', '#ffd859', 2);
-        pText(`[AÇÃO] ${near.obj.name}`, near.obj.x, near.obj.y + 54, 11, '#ffe48a');
+        rBox(near.obj.x - 82, near.obj.y + 30, 164, 20, 6, 'rgba(18,22,30,0.92)', '#ffd859', 2);
+        pText(`[AÇÃO] ${near.obj.name}`, near.obj.x, near.obj.y + 44, 10, '#ffe48a');
       }
     }
 
@@ -907,8 +808,6 @@
 
     document.getElementById('snackBtn').onclick = () => {
       say('Hora do Lanche & Resíduos', snackTimeActive
-        ? 'A hora do lanche gerou resíduos! Descarte recicláveis na lixeira verde e não recicláveis na vermelha.'
-        : 'A hora do lanche & Resíduos', snackTimeActive
         ? 'A hora do lanche gerou resíduos! Descarte recicláveis na lixeira verde e não recicláveis na vermelha.'
         : 'A hora do lanche ativa junto com a etapa de separação de resíduos (missão 4).');
     };
