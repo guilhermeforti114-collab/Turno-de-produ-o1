@@ -197,7 +197,8 @@
       <button class="btnPri" id="restartBtn">RECOMEÇAR DO ZERO ↻</button>
     </div>
   </div>
-    <script>
+
+  <script>
   (() => {
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
@@ -638,186 +639,43 @@
       }
 
       particles = particles.filter(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; return p.life > 0; });
-      draw();      ctx.fillStyle = '#adb3ba'; ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 1.5;
-      for (let x = 28; x < W - 28; x += 80) { ctx.beginPath(); ctx.moveTo(x, 120); ctx.lineTo(x, H - 28); ctx.stroke(); }
-      for (let y = 120; y < H - 28; y += 72) { ctx.beginPath(); ctx.moveTo(28, y); ctx.lineTo(W - 28, y); ctx.stroke(); }
-
-      ctx.strokeStyle = '#e8b938'; ctx.lineWidth = 5;
-      ctx.strokeRect(65, 295, W - 130, 145);
-
-      rBox(0, 0, W, 120, 0, '#6a7482', INK, 3);
-      rBox(450, 14, 300, 44, 6, '#e6e9ed', INK, 3);
-      labelTxt('XLP - SENAI', 600, 44, 24, '#c7342b');
-
-      rBox(500, 66, 200, 54, 4, '#3e6899', INK, 3);
-      rBox(500, 108, 200, 12, 0, '#e8b638', INK, 2);
-
-      rBox(1040, 120, 120, 70, 5, '#6e472b', INK, 3);
-      rBox(1046, 125, 108, 22, 4, '#fff3cf', INK, 2);
-      labelTxt('RH / DIRETORIA', 1100, 140, 9, '#362010');
-
-      [
-        { x: 190, n: 'INJETORA 01' },
-        { x: 400, n: 'INJETORA 02' },
-        { x: 610, n: 'INJETORA 03' }
-      ].forEach(inj => {
-        rBox(inj.x, 165, 170, 95, 9, '#356ea8', INK, 3);
-        rBox(inj.x + 14, 177, 74, 42, 5, '#89b7e0', INK, 2);
-        rBox(inj.x + 98, 179, 58, 38, 5, '#2a313a', INK, 2);
-        ctx.fillStyle = '#55e082'; ctx.fillRect(inj.x + 106, 187, 8, 8);
-        ctx.fillStyle = '#ffd454'; ctx.fillRect(inj.x + 118, 187, 8, 8);
-        labelTxt(inj.n, inj.x + 85, 246, 11, '#ffd86b');
-      });
-
-      [820, 910].forEach((bx, idx) => {
-        rBox(bx, 175, 68, 78, 10, '#3b6ea1', INK, 3);
-        rBox(bx - 4, 198, 76, 26, 4, '#ffd454', INK, 2);
-        labelTxt(`BORRA ${idx + 1}`, bx + 34, 215, 9.5, '#1d2229');
-      });
-
-      rBox(160, 470, 125, 95, 8, '#7d8794', INK, 3);
-      rBox(178, 484, 88, 38, 5, '#373e47', INK, 2);
-      labelTxt('TRITURADOR', 222, 550, 10, '#ffd86b');
-
-      rBox(310, 475, 95, 90, 9, '#4c7862', INK, 3);
-      labelTxt('REUSO', 357, 515, 11, '#fff');
-      labelTxt(`(${reuseCount})`, 357, 534, 11, '#ffd86b');
-
-      rBox(445, 480, 65, 85, 8, '#3e994a', INK, 3);
-      labelTxt('♻', 477, 522, 20, '#fff');
-      labelTxt('REC.', 477, 552, 9, '#fff');
-
-      rBox(525, 480, 65, 85, 8, '#c93c34', INK, 3);
-      labelTxt('🗑', 557, 522, 18, '#fff');
-      labelTxt('NÃO REC', 557, 552, 8.5, '#fff');
-
-      rBox(635, 475, 220, 90, 8, '#505963', INK, 3);
-      rBox(655, 456, 36, 26, 4, '#cfa165', INK, 2);
-      rBox(715, 456, 36, 26, 4, '#cfa165', INK, 2);
-      labelTxt(`EMBALA (${packedCount}/10)`, 745, 530, 11, '#ffd86b');
-
-      rBox(900, 465, 220, 105, 9, '#e6e9ed', INK, 3);
-      rBox(1068, 476, 46, 84, 5, '#3870ab', INK, 2.5);
-      labelTxt('CAMINHÃO XLP', 985, 524, 12, '#1d2229');
+      draw();
+      requestAnimationFrame(loop);
     }
 
-    function drawChar(x, y, shirt, hair, bob = 0, badge = '') {
-      ctx.save();
-      ctx.translate(x, y + Math.sin(bob) * 2.2);
-      ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath(); ctx.ellipse(0, 20, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
+    document.getElementById('startBtn').onclick = () => {
+      started = true;
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('hud').classList.remove('hidden');
+      renderHearts(); updateHud();
+      say('Turno Iniciado', `Função: "${assignedRole}". Produto: ${selectedProduct}. Fale com o Supervisor à esquerda!`);
+    };
 
-      rBox(-10, 4, 8, 13, 3, '#29384a', INK, 2);
-      rBox(2, 4, 8, 13, 3, '#29384a', INK, 2);
-      rBox(-12, -16, 24, 22, 6, shirt, INK, 2.2);
+    document.getElementById('restartBtn').onclick = () => {
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      rollRole(); resetAll();
+    };
 
-      ctx.beginPath(); ctx.arc(0, -28, 14, 0, Math.PI * 2);
-      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.stroke();
+    document.getElementById('actBtn').onclick = act;
+    document.getElementById('sayOk').onclick = closeSay;
 
-      ctx.fillStyle = '#1c2026';
-      ctx.beginPath(); ctx.arc(-4.5, -27, 2, 0, Math.PI * 2); ctx.arc(4.5, -27, 2, 0, Math.PI * 2); ctx.fill();
+    document.querySelectorAll('[data-dir]').forEach(b => {
+      const k = b.dataset.dir;
+      b.onpointerdown = e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); };
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => { keys[k] = false; }));
+    });
 
-      ctx.beginPath(); ctx.arc(0, -33, 15, Math.PI * 0.9, Math.PI * 2.1);
-ctx.fillStyle = hair; ctx.fill(); ctx.stroke();
-if (badge) {
-rBox(-15, -60, 30, 18, 5, badge === '!' ? '#ffd859' : '#ffffff', INK, 2);
-labelTxt(badge, 0, -47, 10.5, '#1d2229');
-}
-ctx.restore();
-}
-function draw() {
-ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-ctx.fillStyle = '#141920';
-ctx.fillRect(0, 0, vw, vh);
-const scale = Math.min(vw / W, vh / H);
-const offX = (vw - W * scale) / 2;
-const offY = (vh - H * scale) / 2;
-ctx.translate(offX, offY);
-ctx.scale(scale, scale);
-drawCorridor();
-for (const p of particles) {
-ctx.globalAlpha = Math.max(0, p.life / p.max);
-ctx.fillStyle = p.color;
-ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
-}
-ctx.globalAlpha = 1;
-const list = [
-...npcs.map(n => ({ y: n.y, fn: () => drawChar(n.x, n.y, n.shirt, n.hair, 0, n.badge) })),
-{ y: player.y, fn: () => drawChar(player.x, player.y, '#ede4d5', '#5e3722', player.walk, '') }
-];
-if (rhBot.active) list.push({ y: rhBot.y, fn: () => drawChar(rhBot.x, rhBot.y, '#242933', '#1c1d21', 0.2, 'RH!') });
-list.sort((a, b) => a.y - b.y);
-list.forEach(a => a.fn());
-const hit = nearest();
-if (hit) {
-rBox(hit.obj.x - 74, hit.obj.y + 24, 148, 19, 5, 'rgba(18,22,30,0.92)', '#ffd859', 2);
-labelTxt([AÇÃO] ${hit.obj.name}, hit.obj.x, hit.obj.y + 37, 9.5, '#ffe48a');
-}
-}
-let prev = performance.now();
-function loop(now) {
-const dt = Math.min(0.05, (now - prev) / 1000);
-prev = now;
-if (started && !gameOver) {
-let dx = 0, dy = 0;
-if (keys.left || keys.arrowleft || keys.a) dx--;
-if (keys.right || keys.arrowright || keys.d) dx++;
-if (keys.up || keys.arrowup || keys.w) dy--;
-if (keys.down || keys.arrowdown || keys.s) dy++;
-if (dx || dy) {
-const l = Math.hypot(dx, dy) || 1;
-player.x += (dx / l) * player.speed * dt;
-player.y += (dy / l) * player.speed * dt;
-collide();
-player.walk += dt * 12;
-} else player.walk = 0;
-if (rhBot.active) {
-const a = Math.atan2(rhBot.ty - rhBot.y, rhBot.tx - rhBot.x);
-const d = Math.hypot(rhBot.tx - rhBot.x, rhBot.ty - rhBot.y);
-if (d > 8) { rhBot.x += Math.cos(a) * 280 * dt; rhBot.y += Math.sin(a) * 280 * dt; }
-}
-if (!sayOpen && step >= 1 && step <= 4) {
-timer -= dt;
-if (timer <= 0) callRh('Estouro de tempo no ciclo da injetora');
-}
-document.getElementById('timerFill').style.width = Math.max(0, (timer / timerMax) * 100) + '%';
-}
-particles = particles.filter(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; return p.life > 0; });
-draw();
-requestAnimationFrame(loop);
-}
-document.getElementById('startBtn').onclick = () => {
-started = true;
-document.getElementById('startScreen').classList.add('hidden');
-document.getElementById('hud').classList.remove('hidden');
-renderHearts(); updateHud();
-say('Turno Iniciado', Função: "${assignedRole}". Produto: ${selectedProduct}. Fale com o Supervisor à esquerda!);
-};
-document.getElementById('restartBtn').onclick = () => {
-document.getElementById('gameOverScreen').classList.add('hidden');
-rollRole(); resetAll();
-};
-document.getElementById('actBtn').onclick = act;
-document.getElementById('sayOk').onclick = closeSay;
-document.querySelectorAll('[data-dir]').forEach(b => {
-const k = b.dataset.dir;
-b.onpointerdown = e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); };
-['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => { keys[k] = false; }));
-});
-addEventListener('keydown', e => {
-const k = e.key.toLowerCase();
-if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
-keys[k] = true;
-if (k === 'e' || k === 'enter' || k === ' ') act();
-});
-addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-addEventListener('blur', () => { keys = {}; });
-renderHearts(); updateHud(); requestAnimationFrame(loop);
-})();
-</script>
+    addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+      keys[k] = true;
+      if (k === 'e' || k === 'enter' || k === ' ') act();
+    });
+    addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+    addEventListener('blur', () => { keys = {}; });
+
+    renderHearts(); updateHud(); requestAnimationFrame(loop);
+  })();
+  </script>
 </body>
 </html>
-           
-      
-  
