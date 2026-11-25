@@ -3,134 +3,227 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#192028">
-  <title>Turno de Produção — XLP Arcade</title>
+  <meta name="theme-color" content="#14181f">
+  <title>Turno de Produção — XLP Pixel Arcade</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
       margin: 0; width: 100%; height: 100%; overflow: hidden;
-      background: #1b222a; color: #f5f7fa;
-      font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
+      background: #14181f; color: #f4f6f8;
+      font-family: 'Courier New', Courier, monospace;
       touch-action: none;
     }
     canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
     #hud { position: fixed; inset: 0; pointer-events: none; }
-    .topHud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .missionBox { width: min(275px, 44vw); background: rgba(34, 32, 31, 0.9); border: 2px solid #7d7466; border-radius: 12px; box-shadow: 0 5px 14px rgba(0, 0, 0, 0.5); overflow: hidden; pointer-events: auto; }
-    .missionHeader { display: flex; align-items: center; gap: 7px; padding: 8px 10px; background: rgba(20, 19, 19, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.14); font-weight: 900; font-size: 13px; }
-    .badgeExcl { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(180deg, #ffd454, #df9316); color: #241905; font-weight: 900; font-size: 14px; display: grid; place-items: center; border: 1.5px solid #3c2a0a; }
-    .roleTag { margin-left: auto; font-size: 9px; padding: 2px 6px; border-radius: 6px; background: #355f91; color: #fff; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #missions { padding: 5px 9px 8px; max-height: 36vh; overflow-y: auto; }
-    .mission { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; line-height: 1.28; padding: 4px 2px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: #eceee9; }
+
+    /* MISSÕES NO CANTO SUPERIOR ESQUERDO */
+    .missionBox {
+      position: absolute; top: 8px; left: 8px;
+      width: min(230px, 44vw);
+      background: rgba(18, 22, 29, 0.9);
+      border: 3px solid #6b7b94;
+      box-shadow: 0 4px 0 #090c10;
+      overflow: hidden; pointer-events: auto;
+    }
+    .missionHeader {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px; background: #222a38;
+      border-bottom: 2px solid #6b7b94;
+      font-weight: 900; font-size: 12px; color: #ffd252;
+    }
+    .badgeExcl {
+      width: 18px; height: 18px; background: #ffd252; color: #161a21;
+      border: 2px solid #090c10; font-weight: 900; font-size: 12px;
+      display: grid; place-items: center;
+    }
+    .roleTag {
+      margin-left: auto; font-size: 9px; padding: 2px 5px;
+      background: #355f91; color: #fff; border: 1px solid #090c10;
+      max-width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #missions { padding: 4px 7px 6px; max-height: 30vh; overflow-y: auto; }
+    .mission {
+      font-size: 10px; line-height: 1.25; padding: 3px 1px;
+      border-top: 1px dashed rgba(255,255,255,0.12); color: #e8edf5;
+    }
     .mission:first-child { border-top: 0; }
-    .mission.done { color: #8fe09b; text-decoration: line-through; opacity: 0.78; }
-    .mission.current { color: #ffe285; font-weight: 800; }
-    .mDot { flex-shrink: 0; width: 9px; height: 9px; margin-top: 2px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe27a, #df9316); border: 1.5px solid #3b290a; }
-    .done .mDot { background: #67d17d; border-color: #1c4a26; }
-    .centerStatus { display: flex; flex-direction: column; align-items: center; gap: 5px; max-width: min(370px, 34vw); }
-    .goalPill { background: rgba(24, 28, 34, 0.88); border: 2px solid #e6b842; border-radius: 10px; padding: 5px 11px; text-align: center; width: 100%; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45); }
-    .goalPill b, .goalPill small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .goalPill b { font-size: 11px; color: #ffd869; }
-    .goalPill small { font-size: 9.5px; color: #dce2ea; }
-    .cycleBarWrap { width: 100%; background: rgba(20, 24, 30, 0.9); border: 2px solid #596575; border-radius: 8px; padding: 4px 8px; }
-    .cycleLabel { display: flex; justify-content: space-between; font-size: 9.5px; color: #e8edf2; margin-bottom: 3px; }
-    .cycleTrack { height: 7px; background: #2b323d; border-radius: 4px; overflow: hidden; }
-    .cycleFill { height: 100%; width: 100%; background: linear-gradient(90deg, #52d67a, #ffd24c, #eb4b42); }
-    .rightHud { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: auto; }
-    .coinsBox { display: flex; align-items: center; gap: 7px; background: rgba(28, 30, 34, 0.9); border: 2px solid #8f7b52; border-radius: 20px; padding: 4px 12px 4px 5px; font-weight: 900; font-size: 15px; color: #ffe28a; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45); }
-    .coinDisc { width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffe67a, #dc9216); color: #5c3a06; font-size: 12px; font-weight: 900; display: grid; place-items: center; border: 1.5px solid #4d3106; }
-    .hudBtn { background: rgba(34, 39, 48, 0.92); color: #fff; border: 2px solid #758496; border-radius: 10px; padding: 6px 11px; font-size: 11px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45); }
-    .hudBtn:active { transform: scale(0.96); }
-    .heartsBox { position: absolute; left: 14px; bottom: 136px; display: flex; gap: 5px; background: rgba(22, 25, 30, 0.85); border: 2px solid #596370; border-radius: 12px; padding: 5px 9px; pointer-events: none; }
-    .heartIcon { font-size: 18px; transition: transform 0.2s ease, filter 0.2s ease; }
-    .heartIcon.lost { filter: grayscale(1) opacity(0.35); transform: scale(0.85); }
-    .dialogBox { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); width: min(540px, 90vw); background: rgba(22, 25, 31, 0.96); border: 2.5px solid #ffd252; border-radius: 13px; padding: 12px 15px; display: none; pointer-events: auto; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65); }
+    .mission.done { color: #7ce095; text-decoration: line-through; opacity: 0.75; }
+    .mission.current { color: #ffe285; font-weight: 900; }
+
+    /* OBJETIVO PEQUENO NO CANTO SUPERIOR DIREITO / MEIO SEM ATRAPALHAR */
+    .goalCorner {
+      position: absolute; top: 8px; right: 8px;
+      width: min(220px, 46vw);
+      background: rgba(18, 22, 29, 0.88);
+      border: 2.5px solid #ffd252;
+      box-shadow: 0 3px 0 #090c10;
+      padding: 5px 8px; text-align: left;
+      pointer-events: auto;
+    }
+    .goalCorner b {
+      display: block; font-size: 10px; color: #ffd252;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .goalCorner small {
+      display: block; font-size: 9px; color: #d5dde8; margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .miniMeta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 4px; font-size: 9.5px; font-weight: 900; color: #fff;
+    }
+    .coinsInline { color: #ffd86b; }
+    .cycleTrack {
+      height: 5px; background: #29313d; border: 1px solid #090c10;
+      margin-top: 4px; overflow: hidden;
+    }
+    .cycleFill { height: 100%; width: 100%; background: #55d67b; }
+
+    .topMiniBtns {
+      position: absolute; top: 74px; right: 8px;
+      display: flex; gap: 5px; pointer-events: auto;
+    }
+    .miniBtn {
+      background: #232b38; color: #fff; border: 2px solid #6b7b94;
+      box-shadow: 0 2px 0 #090c10; padding: 4px 8px;
+      font-family: inherit; font-size: 10px; font-weight: 900; cursor: pointer;
+    }
+    .miniBtn:active { transform: translateY(2px); }
+
+    /* CORAÇÕES */
+    .heartsBox {
+      position: absolute; left: 10px; bottom: 162px;
+      display: flex; gap: 4px; background: rgba(18,22,29,0.88);
+      border: 2.5px solid #6b7b94; box-shadow: 0 3px 0 #090c10;
+      padding: 4px 8px;
+    }
+    .heartIcon { font-size: 16px; }
+    .heartIcon.lost { filter: grayscale(1); opacity: 0.35; }
+
+    /* DIÁLOGO */
+    .dialogBox {
+      position: absolute; left: 50%; bottom: 156px; transform: translateX(-50%);
+      width: min(520px, 92vw); background: #161b24;
+      border: 3px solid #ffd252; box-shadow: 0 5px 0 #090c10;
+      padding: 10px 14px; display: none; pointer-events: auto;
+    }
     .dialogBox.show { display: block; }
-    .dialogBox.rhAlert { border-color: #ff574d; background: rgba(38, 18, 20, 0.97); }
-    .dialogTop { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .dialogBox strong { color: #ffd666; font-size: 14px; }
-    .dialogBox.rhAlert strong { color: #ff776e; }
-    .dialogKind { font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: #354354; color: #fff; }
+    .dialogBox.rhAlert { border-color: #ff574d; background: #2b1416; }
+    .dialogTop { display: flex; justify-content: space-between; align-items: center; }
+    .dialogBox strong { color: #ffd252; font-size: 13px; }
+    .dialogBox.rhAlert strong { color: #ff7a72; }
+    .dialogKind { font-size: 9px; font-weight: 900; padding: 2px 6px; background: #344154; color: #fff; }
     .rhAlert .dialogKind { background: #b83229; }
-    .dialogBox p { margin: 7px 0 10px; font-size: 12.5px; line-height: 1.42; color: #f4f6f8; }
-    .dialogBox button { float: right; background: linear-gradient(180deg, #ffd454, #e39717); color: #221705; border: 2px solid #452f09; border-radius: 8px; padding: 7px 14px; font-weight: 900; font-size: 11.5px; cursor: pointer; }
-    .dpad { position: absolute; left: 12px; bottom: 12px; display: grid; grid-template-columns: 42px 42px 42px; grid-template-rows: 38px 38px 38px; gap: 3px; pointer-events: auto; opacity: 0.88; }
-    .dpad button { border: 1.5px solid rgba(255, 255, 255, 0.35); border-radius: 9px; background: rgba(29, 34, 43, 0.9); color: #fff; font-size: 15px; font-weight: 900; touch-action: none; }
-    .dpad button:active { background: #ffd252; color: #1c1608; }
+    .dialogBox p { margin: 6px 0 10px; font-size: 12px; line-height: 1.4; }
+    .dialogBox button {
+      float: right; background: #ffd252; color: #161a21;
+      border: 2px solid #090c10; box-shadow: 0 2px 0 #090c10;
+      padding: 5px 12px; font-family: inherit; font-weight: 900; font-size: 11px; cursor: pointer;
+    }
+
+    /* BOTÕES DE MOVER E AÇÃO BEM MAIORES PARA CELULAR */
+    .dpad {
+      position: absolute; left: 10px; bottom: 10px;
+      display: grid;
+      grid-template-columns: 54px 54px 54px;
+      grid-template-rows: 48px 48px 48px;
+      gap: 4px; pointer-events: auto;
+    }
+    .dpad button {
+      background: rgba(25, 31, 41, 0.92); color: #fff;
+      border: 3px solid #7c8fa8; box-shadow: 0 3px 0 #090c10;
+      font-family: inherit; font-size: 20px; font-weight: 900; touch-action: none;
+    }
+    .dpad button:active { background: #ffd252; color: #14181f; transform: translateY(2px); }
     .dpad .up { grid-column: 2; }
     .dpad .left { grid-column: 1; grid-row: 2; }
     .dpad .right { grid-column: 3; grid-row: 2; }
     .dpad .down { grid-column: 2; grid-row: 3; }
-    .actionBtn { position: absolute; right: 12px; bottom: 14px; pointer-events: auto; min-width: 86px; min-height: 54px; background: linear-gradient(180deg, #ffd454, #e39717); color: #221705; border: 2.5px solid #3d2a09; border-radius: 12px; font-weight: 900; font-size: 12px; line-height: 1.15; box-shadow: 0 5px 14px rgba(0, 0, 0, 0.5); cursor: pointer; }
-    .actionBtn span { font-size: 10px; opacity: 0.85; }
-    .actionBtn:active { transform: scale(0.95); }
-    #startScreen, #gameOverScreen { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; background: radial-gradient(circle at 50% 35%, #374759, #141920 75%); }
-    .arcadeCard { width: min(520px, 94vw); text-align: center; background: rgba(23, 27, 34, 0.96); border: 3px solid #ffd252; border-radius: 18px; padding: 22px 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75); }
-    .dangerCard { border-color: #ff574d; }
-    .arcadeKicker { font-size: 10.5px; letter-spacing: 0.16em; color: #ffd252; font-weight: 900; }
-    .dangerCard .arcadeKicker { color: #ff7870; }
-    .arcadeCard h1, .arcadeCard h2 { margin: 8px 0; font-size: clamp(26px, 6.5vw, 42px); line-height: 1.03; color: #ffd866; text-shadow: 0 3px 0 #4d360b; }
-    .dangerCard h2 { color: #ff7870; text-shadow: 0 3px 0 #4a120f; }
-    .arcadeDesc { font-size: 12.5px; line-height: 1.45; color: #dce2ea; margin: 8px 0 14px; }
-    .rouletteBox { background: #141820; border: 2px solid #465366; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
-    .rouletteLabel { font-size: 10px; font-weight: 900; color: #9fb0c7; letter-spacing: 0.08em; }
-    .rouletteResult { margin: 6px 0 8px; font-size: 13.5px; font-weight: 900; color: #7ae598; }
-    .secondaryBtn { background: #2b3647; color: #fff; border: 2px solid #6b7d94; border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 900; cursor: pointer; }
-    .productSelectRow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-bottom: 16px; font-size: 10.5px; font-weight: 800; color: #cfd7e3; }
-    .chip { background: #232a36; color: #d6dde8; border: 1.5px solid #59677a; border-radius: 8px; padding: 5px 8px; font-size: 10.5px; font-weight: 800; cursor: pointer; }
-    .chip.active { background: #ffd252; color: #211605; border-color: #ffd252; }
-    .primaryBtn { background: linear-gradient(180deg, #ffd454, #e39717); color: #221705; border: 2.5px solid #422c08; border-radius: 11px; padding: 12px 26px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45); }
-    .primaryBtn:active { transform: scale(0.97); }
-    .hidden { display: none !important; }
-    @media (max-width: 720px) {
-      .missionBox { width: 175px; }
-      #missions { max-height: 28vh; }
-      .mission { font-size: 10px; }
-      .centerStatus { max-width: calc(100vw - 265px); }
-      .goalPill b { font-size: 10px; }
-      .goalPill small { font-size: 8.5px; }
-      .heartsBox { bottom: 126px; left: 10px; padding: 4px 7px; }
-      .heartIcon { font-size: 14px; }
+
+    .actionBtn {
+      position: absolute; right: 10px; bottom: 10px;
+      pointer-events: auto; width: 108px; height: 74px;
+      background: #ffd252; color: #14181f;
+      border: 3px solid #090c10; box-shadow: 0 4px 0 #090c10;
+      font-family: inherit; font-weight: 900; font-size: 15px; line-height: 1.15; cursor: pointer;
     }
+    .actionBtn span { font-size: 11px; }
+    .actionBtn:active { transform: translateY(3px); }
+
+    /* MENU ARCADE E GAME OVER */
+    #startScreen, #gameOverScreen {
+      position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 14px;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 2px, transparent 2px 4px), radial-gradient(circle at 50% 35%, #2b3a4f, #10141b 75%);
+    }
+    .arcadeCard {
+      width: min(500px, 94vw); text-align: center; background: #171d26;
+      border: 4px solid #ffd252; box-shadow: 0 0 0 3px #090c10, 0 10px 0 #090c10;
+      padding: 18px 16px;
+    }
+    .dangerCard { border-color: #ff574d; }
+    .arcadeKicker { font-size: 10px; letter-spacing: 2px; color: #ffd252; font-weight: 900; }
+    .dangerCard .arcadeKicker { color: #ff7870; }
+    .arcadeCard h1, .arcadeCard h2 { margin: 8px 0; font-size: clamp(24px, 6vw, 38px); line-height: 1.05; color: #ffd252; text-shadow: 3px 3px 0 #090c10; }
+    .dangerCard h2 { color: #ff7870; }
+    .arcadeDesc { font-size: 11.5px; line-height: 1.4; color: #d5dde8; margin: 6px 0 12px; }
+    .rouletteBox { background: #10141b; border: 2px solid #49576b; padding: 8px 10px; margin-bottom: 10px; }
+    .rouletteLabel { font-size: 9.5px; font-weight: 900; color: #9fb0c7; }
+    .rouletteResult { margin: 5px 0 7px; font-size: 12px; font-weight: 900; color: #7ae598; }
+    .secondaryBtn { background: #263142; color: #fff; border: 2px solid #6b7d94; padding: 5px 10px; font-family: inherit; font-size: 10.5px; font-weight: 900; cursor: pointer; }
+    .productSelectRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 14px; font-size: 10px; font-weight: 900; }
+    .chip { background: #222936; color: #d6dde8; border: 2px solid #59677a; padding: 4px 7px; font-family: inherit; font-size: 10px; font-weight: 900; cursor: pointer; }
+    .chip.active { background: #ffd252; color: #14181f; border-color: #090c10; }
+    .primaryBtn { background: #55d67b; color: #101712; border: 3px solid #090c10; box-shadow: 0 4px 0 #090c10; padding: 11px 22px; font-family: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
+    .primaryBtn:active { transform: translateY(3px); }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
   <div id="hud" class="hidden">
-    <div class="topHud">
-      <div class="missionBox" id="missionBox">
-        <div class="missionHeader"><span class="badgeExcl">!</span><span>Missões</span><span class="roleTag" id="roleTag">FUNÇÃO</span></div>
-        <div id="missions"></div>
-      </div>
-      <div class="centerStatus">
-        <div class="goalPill"><b id="objective">Converse com o Supervisor</b><small id="subobjective">Aproxime-se e aperte AÇÃO [E].</small></div>
-        <div class="cycleBarWrap">
-          <div class="cycleLabel"><span>PRODUTO: <strong id="productName">Balde de plástico</strong></span><span>TEMPO: <strong id="timerText">--s</strong></span></div>
-          <div class="cycleTrack"><div class="cycleFill" id="cycleFill"></div></div>
-        </div>
-      </div>
-      <div class="rightHud">
-        <div class="coinsBox"><span class="coinDisc">1</span><span id="coins">0225</span></div>
-        <button class="hudBtn" id="snackBtn" title="Status do Lanche">🥪 Lanche</button>
-        <button class="hudBtn" id="mapBtn">📍 Mapa</button>
-      </div>
+    <div class="missionBox" id="missionBox">
+      <div class="missionHeader"><span class="badgeExcl">!</span><span>MISSÕES</span><span class="roleTag" id="roleTag">FUNÇÃO</span></div>
+      <div id="missions"></div>
     </div>
+
+    <div class="goalCorner">
+      <b id="objective">Converse com o Supervisor</b>
+      <small id="subobjective">Aproxime-se e aperte AÇÃO.</small>
+      <div class="miniMeta">
+        <span class="coinsInline">🪙 <span id="coins">0225</span></span>
+        <span>⏱ <span id="timerText">--s</span></span>
+      </div>
+      <div class="cycleTrack"><div class="cycleFill" id="cycleFill"></div></div>
+    </div>
+
+    <div class="topMiniBtns">
+      <button class="miniBtn" id="snackBtn">🥪 LANCHE</button>
+      <button class="miniBtn" id="mapBtn">📋 MISSÕES</button>
+    </div>
+
     <div class="dialogBox" id="dialog">
       <div class="dialogTop"><strong id="speaker">Supervisor</strong><span class="dialogKind" id="dialogKind">EQUIPE</span></div>
       <p id="speech"></p>
-      <button id="closeDialog">CONTINUAR ▶</button>
+      <button id="closeDialog">OK ▶</button>
     </div>
-    <div class="heartsBox" id="heartsBox" aria-label="Vidas"></div>
+
+    <div class="heartsBox" id="heartsBox"></div>
+
     <div class="dpad">
-      <button class="up" data-dir="up">▲</button><button class="left" data-dir="left">◀</button><button class="right" data-dir="right">▶</button><button class="down" data-dir="down">▼</button>
+      <button class="up" data-dir="up">▲</button>
+      <button class="left" data-dir="left">◀</button>
+      <button class="right" data-dir="right">▶</button>
+      <button class="down" data-dir="down">▼</button>
     </div>
+
     <button class="actionBtn" id="action">AÇÃO<br><span>[E]</span></button>
   </div>
+
   <div id="startScreen">
     <div class="arcadeCard">
-      <div class="arcadeKicker">XLP · SENAI · SIMULADOR ARCADE 2D</div>
+      <div class="arcadeKicker">XLP · SENAI · PIXEL ARCADE</div>
       <h1>TURNO DE<br>PRODUÇÃO</h1>
-      <p class="arcadeDesc">Faça os processos no tempo da injetora, cuide das borras e resíduos, embale os produtos e mande para o caminhão. Erros chamam a <strong>Diretoria / RH</strong> e custam <strong>1 coração</strong> (3 vidas).</p>
+      <p class="arcadeDesc">Faça os processos no tempo da injetora, cuide das borras e resíduos, embale os produtos e mande para o caminhão. Erros chamam o <strong>RH</strong> e custam <strong>1 coração</strong> (3 vidas).</p>
       <div class="rouletteBox">
         <div class="rouletteLabel">SORTEIO DE FUNÇÃO DO TURNO</div>
         <div class="rouletteResult" id="rouletteResult">Clique em SORTEAR ou INICIAR</div>
@@ -145,6 +238,7 @@
       <button class="primaryBtn" id="startBtn">ENTRAR NO TURNO ▶</button>
     </div>
   </div>
+
   <div id="gameOverScreen" class="hidden">
     <div class="arcadeCard dangerCard">
       <div class="arcadeKicker">CONVOCADO PELO RH · 0 CORAÇÕES</div>
@@ -159,7 +253,7 @@
     let vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
     function resize() { vw = innerWidth; vh = innerHeight; canvas.width = vw * dpr; canvas.height = vh * dpr; canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px'; ctx.imageSmoothingEnabled = false; }
     addEventListener('resize', resize); resize();
-    const W = 2400, H = 1650, INK = '#23272d';
+    const W = 2400, H = 1650, PX = 4, INK = '#12151b';
     const ROLES = ['Remover rebarbas da peça', 'Injetar 3 peças e retirar as borras', 'Triturar as borras e colocar em um recipiente grande para guardar e ser reutilizado depois para injetar mais produtos'];
     const PRODUCTS = ['Balde de plástico', 'Copos de plástico', 'Garrafas de plástico'];
     let assignedRole = ROLES[0], selectedProduct = PRODUCTS[0], productIdx = 0, started = false, gameOver = false, hearts = 3, coins = 225, missionIndex = 0, dialogue = null;
@@ -200,14 +294,14 @@
     function rollRole() { assignedRole = ROLES[Math.floor(Math.random() * ROLES.length)]; document.getElementById('rouletteResult').textContent = '★ ' + assignedRole; document.getElementById('roleTag').textContent = assignedRole.split(' ')[0].toUpperCase(); }
     rollRole();
     document.getElementById('rerollBtn').onclick = rollRole;
-    document.querySelectorAll('.chip').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); selectedProduct = btn.dataset.prod; productIdx = PRODUCTS.indexOf(selectedProduct); document.getElementById('productName').textContent = selectedProduct; }; });
+    document.querySelectorAll('.chip').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); selectedProduct = btn.dataset.prod; productIdx = PRODUCTS.indexOf(selectedProduct); }; });
     function renderHearts() { const box = document.getElementById('heartsBox'); box.innerHTML = ''; for (let i = 0; i < 3; i++) { const span = document.createElement('span'); span.className = 'heartIcon' + (i >= hearts ? ' lost' : ''); span.textContent = '❤️'; box.appendChild(span); } }
     function say(speaker, text, isRh = false) { dialogue = { speaker, text, isRh }; const box = document.getElementById('dialog'); document.getElementById('speaker').textContent = speaker; document.getElementById('dialogKind').textContent = isRh ? 'DIRETORIA / RH' : 'FÁBRICA'; document.getElementById('speech').textContent = text; box.classList.toggle('rhAlert', isRh); box.classList.add('show'); }
     function closeDialog() { dialogue = null; document.getElementById('dialog').classList.remove('show'); document.getElementById('dialog').classList.remove('rhAlert'); }
     function triggerRhReprimand(reason) {
       if (gameOver) return; hearts = Math.max(0, hearts - 1); renderHearts(); coins = Math.max(0, coins - 15); cycleTimer = cycleMax;
       rhInspector.active = true; rhInspector.x = 1555; rhInspector.y = 480; rhInspector.targetX = player.x + 42; rhInspector.targetY = player.y; rhInspector.reason = reason;
-    say('Representante do RH (Diretoria)', `Sermão da Diretoria: ${reason}! Atenção ao padrão operacional da XLP - SENAI. Você perdeu 1 coração (${hearts}/3 restantes).`, true);
+      say('Representante do RH (Diretoria)', `Sermão da Diretoria: ${reason}! Atenção ao padrão operacional da XLP - SENAI. Você perdeu 1 coração (${hearts}/3 restantes).`, true);
       if (hearts <= 0) { gameOver = true; document.getElementById('gameOverReason').textContent = `Você perdeu os 3 corações após: ${reason}. Recomece o turno do zero!`; document.getElementById('gameOverScreen').classList.remove('hidden'); }
       updateHud();
     }
@@ -220,56 +314,67 @@
         if (i === 2) t = `Borra no tambor/triturada (${recycledStored}/1 reuso)`;
         if (i === 3) t = `Resíduos: recicláveis (${recycleBinDone ? 1 : 0}/1) e não recicláveis (${nonRecycleBinDone ? 1 : 0}/1)`;
         if (i === 4) t = `Embale 10 peças (${packedCount}/10)`;
-        return `<div class="mission ${i < missionIndex ? 'done' : (i === missionIndex ? 'current' : '')}"><span class="mDot"></span><span>${t}</span></div>`;
-      }).join('');
-      const cur = missions[Math.min(missionIndex, missions.length - 1)];
-      document.getElementById('objective').textContent = missionIndex >= missions.length ? 'Turno concluído!' : cur.title + roleBonus;
-      document.getElementById('subobjective').textContent = missionIndex >= missions.length ? 'Parabéns! Todas as missões concluídas.' : cur.desc;
-      document.getElementById('coins').textContent = String(coins).padStart(4, '0');
-      document.getElementById('productName').textContent = selectedProduct;
-    }    function rBox(x, y, w, h, r, fill, stroke = INK, lw = 3) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); } }
-    function pText(t, x, y, size = 15, color = '#fff', align = 'center', weight = '900') { ctx.font = `${weight} ${size}px "Trebuchet MS", sans-serif`; ctx.textAlign = align; ctx.strokeStyle = INK; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeText(t, x, y); ctx.fillStyle = color; ctx.fillText(t, x, y); }
-    function drawCrate(x, y, w, h, d = 14) {
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w, y); ctx.closePath(); ctx.fillStyle = '#e0b377'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x + w, y); ctx.lineTo(x + w + d * 0.7, y - d); ctx.lineTo(x + w + d * 0.7, y + h - d); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fillStyle = '#b07d43'; ctx.fill(); ctx.stroke();
-      rBox(x, y, w, h, 2, '#cca064', INK, 2.5);
+        return `<div class="mission ${i < missionIndex ? 'done' : (i === missionIndex ? 'current' : '')}">▸ ${t}</div>`;
+      }).join('');    function snap(v) { return Math.round(v / PX) * PX; }
+    function rBox(x, y, w, h, _r, fill, stroke = INK, lw = PX) {
+      x = snap(x); y = snap(y); w = snap(w); h = snap(h);
+      if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.strokeRect(x + lw / 2, y + lw / 2, Math.max(0, w - lw), Math.max(0, h - lw)); }
+    }
+    function pText(t, x, y, size = 14, color = '#fff', align = 'center', weight = '900') {
+      ctx.font = `${weight} ${size}px "Courier New", monospace`;
+      ctx.textAlign = align;
+      ctx.fillStyle = '#0c0f14';
+      ctx.fillText(t, snap(x) + 2, snap(y) + 2);
+      ctx.fillStyle = color;
+      ctx.fillText(t, snap(x), snap(y));
+    }
+    function drawCrate(x, y, w, h) {
+      rBox(x + 8, y - 8, w, h, 0, '#e0b377', INK, 3);
+      rBox(x, y, w, h, 0, '#c79658', INK, 3);
+      rBox(x + w * 0.42, y + 3, w * 0.16, h - 6, 0, '#ebd0a2', null, 0);
     }
     function drawFactory() {
-      ctx.fillStyle = '#b5b9bf'; ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#8d9299'; ctx.lineWidth = 2;
-      for (let x = 65; x < W - 65; x += 120) { ctx.beginPath(); ctx.moveTo(x, 355); ctx.lineTo(x, H - 55); ctx.stroke(); }
-      for (let y = 355; y < H - 55; y += 110) { ctx.beginPath(); ctx.moveTo(65, y); ctx.lineTo(W - 65, y); ctx.stroke(); }
+      // Piso pixelado em blocos de 80px
+      for (let y = 355; y < H - 55; y += 80) {
+        for (let x = 65; x < W - 65; x += 80) {
+          rBox(x, y, 80, 80, 0, ((x + y) / 80) % 2 === 0 ? '#9aa1ab' : '#8e95a0', '#6d747e', 2);
+        }
+      }
       ctx.strokeStyle = '#e6b83c'; ctx.lineWidth = 8; ctx.strokeRect(120, 405, W - 240, H - 500);
-      rBox(0, 0, W, 355, 0, '#757e88', INK, 4);
-      rBox(980, 32, 440, 72, 8, '#e3e6ea', INK, 4); pText('XLP - SENAI', 1200, 80, 38, '#c9342b');
-      rBox(1050, 125, 300, 230, 4, '#436996', INK, 4); rBox(1050, 322, 300, 33, 0, '#e8b638', INK, 3);
-      rBox(1470, 355, 170, 160, 4, '#6d472c', INK, 4); rBox(1476, 362, 158, 42, 4, '#fff2cc', INK, 2.5);
-      pText('RECURSOS', 1555, 380, 15, '#3b2312'); pText('HUMANOS', 1555, 398, 15, '#3b2312'); rBox(1612, 442, 12, 16, 3, '#e6b83c', INK, 2);
-      for (const jx of [160, 460, 740]) { rBox(jx, 90, 220, 165, 5, '#9ec3d6', INK, 3); }
-      if (snackTimeActive && snackTrashReady) { rBox(1110, 1020, 44, 34, 6, '#f2f2f2', INK, 2.5); pText('🥪', 1132, 1043, 18); rBox(1170, 1030, 38, 28, 5, '#72b5e8', INK, 2.5); pText('🥤', 1189, 1050, 16); }
+      rBox(0, 0, W, 355, 0, '#5a626e', INK, 4);
+      for (let x = 0; x < W; x += 240) rBox(x, 0, 24, 355, 0, '#444b54', INK, 3);
+      rBox(980, 32, 440, 72, 0, '#e3e6ea', INK, 4); pText('XLP - SENAI', 1200, 78, 34, '#c9342b');
+      rBox(1050, 125, 300, 230, 0, '#3e638f', INK, 4); rBox(1050, 322, 300, 33, 0, '#e8b638', INK, 3);
+      rBox(1470, 355, 170, 160, 0, '#6d472c', INK, 4); rBox(1476, 362, 158, 42, 0, '#fff2cc', INK, 2);
+      pText('RECURSOS', 1555, 380, 13, '#3b2312'); pText('HUMANOS', 1555, 396, 13, '#3b2312'); rBox(1612, 442, 12, 16, 0, '#e6b83c', INK, 2);
+      for (const jx of [160, 460, 740]) { rBox(jx, 90, 220, 165, 0, '#88b4cc', INK, 3); rBox(jx + 12, 102, 48, 32, 0, 'rgba(255,255,255,0.25)', null, 0); }
+      if (snackTimeActive && snackTrashReady) { rBox(1110, 1020, 44, 34, 0, '#f2f2f2', INK, 3); pText('🥪', 1132, 1043, 16); rBox(1170, 1030, 38, 28, 0, '#72b5e8', INK, 3); pText('🥤', 1189, 1050, 15); }
     }
     function drawStations() {
-      rBox(1730, 610, 360, 170, 10, '#3870ab', INK, 4); rBox(1755, 630, 150, 78, 6, '#8ab7de', INK, 3); rBox(1935, 635, 125, 70, 6, '#2d343d', INK, 3); pText('INJETORA 01', 1910, 755, 18, '#ffd666');
-      rBox(1240, 630, 230, 150, 10, '#467eb8', INK, 3.5); pText('INJETORA 02', 1355, 712, 16, '#fff');
-      rBox(1530, 890, 95, 95, 12, '#3d709e', INK, 3.5); rBox(1524, 916, 107, 36, 4, '#ffd452', INK, 2.5); pText('BORRAS', 1577, 940, 15, '#23272d');
-      rBox(640, 760, 150, 145, 8, '#7f8994', INK, 3.5); rBox(665, 782, 100, 56, 5, '#3b424c', INK, 2.5); pText('TRITURADOR', 715, 875, 14, '#ffd666');
-      rBox(830, 770, 115, 120, 10, '#4f7a65', INK, 3.5); pText('REUSO', 887, 822, 15, '#fff'); pText(`(${recycledStored})`, 887, 845, 14, '#ffd666');
-      rBox(1710, 1030, 85, 110, 8, '#3f994b', INK, 3.5); pText('♻', 1752, 1085, 28, '#fff'); pText('RECICLÁVEL', 1752, 1122, 10, '#fff');
-      rBox(1825, 1030, 85, 110, 8, '#c93c34', INK, 3.5); pText('🗑', 1867, 1085, 26, '#fff'); pText('NÃO REC.', 1867, 1122, 10, '#fff');
-      rBox(1920, 1290, 390, 125, 8, '#535c66', INK, 3.5); drawCrate(1955, 1255, 56, 40, 14); drawCrate(2050, 1255, 56, 40, 14); pText(`EMBALAGEM (${packedCount}/10)`, 2115, 1365, 16, '#ffd666');
-      rBox(1320, 1340, 260, 150, 10, '#e3e6ea', INK, 3.5); rBox(1520, 1355, 60, 120, 6, '#396fa8', INK, 3); pText('CAMINHÃO XLP', 1435, 1422, 17, '#23272d');
-      rBox(350, 1070, 220, 140, 8, '#8f653c', INK, 3.5); pText('MANUTENÇÃO', 460, 1146, 15, '#fff2cc');
+      rBox(1730, 610, 360, 170, 0, '#34689e', INK, 4); rBox(1755, 630, 150, 78, 0, '#7fb0d9', INK, 3); rBox(1935, 635, 125, 70, 0, '#252b33', INK, 3);
+      rBox(1948, 648, 14, 14, 0, '#55d67b', null, 0); rBox(1968, 648, 14, 14, 0, '#ffd252', null, 0); rBox(1988, 648, 14, 14, 0, '#e8483c', null, 0);
+      pText('INJETORA 01', 1910, 755, 16, '#ffd666');
+      rBox(1240, 630, 230, 150, 0, '#4176ad', INK, 4); pText('INJETORA 02', 1355, 712, 14, '#fff');
+      rBox(1530, 890, 95, 95, 0, '#386894', INK, 4); rBox(1524, 916, 107, 36, 0, '#ffd452', INK, 3); pText('BORRAS', 1577, 940, 13, '#12151b');
+      rBox(640, 760, 150, 145, 0, '#76808c', INK, 4); rBox(665, 782, 100, 56, 0, '#353c45', INK, 3); pText('TRITURADOR', 715, 875, 12, '#ffd666');
+      rBox(830, 770, 115, 120, 0, '#49735e', INK, 4); pText('REUSO', 887, 822, 13, '#fff'); pText(`(${recycledStored})`, 887, 845, 12, '#ffd666');
+      rBox(1710, 1030, 85, 110, 0, '#3b9147', INK, 4); pText('♻', 1752, 1085, 24, '#fff'); pText('RECICLÁVEL', 1752, 1122, 9, '#fff');
+      rBox(1825, 1030, 85, 110, 0, '#bf3730', INK, 4); pText('🗑', 1867, 1085, 24, '#fff'); pText('NÃO REC.', 1867, 1122, 9, '#fff');
+      rBox(1920, 1290, 390, 125, 0, '#4c545e', INK, 4); drawCrate(1955, 1255, 56, 40); drawCrate(2050, 1255, 56, 40); pText(`EMBALAGEM (${packedCount}/10)`, 2115, 1365, 14, '#ffd666');
+      rBox(1320, 1340, 260, 150, 0, '#dfe3e8', INK, 4); rBox(1520, 1355, 60, 120, 0, '#34689e', INK, 3); pText('CAMINHÃO XLP', 1435, 1422, 15, '#12151b');
+      rBox(350, 1070, 220, 140, 0, '#875e36', INK, 4); pText('MANUTENÇÃO', 460, 1146, 13, '#fff2cc');
     }
     function drawCharacter(x, y, shirt, hair, cap, glasses, bob = 0, label = '') {
-      ctx.save(); ctx.translate(x, y + Math.sin(bob) * 2.5);
-      ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(0, 28, 22, 7, 0, 0, Math.PI * 2); ctx.fill();
-      rBox(-14, 6, 11, 18, 3, '#2b394a', INK, 2.5); rBox(3, 6, 11, 18, 3, '#2b394a', INK, 2.5); rBox(-17, -22, 34, 30, 8, shirt, INK, 3);
-      ctx.beginPath(); ctx.arc(0, -39, 19, 0, Math.PI * 2); ctx.fillStyle = '#e6ad87'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
-      ctx.fillStyle = '#1e2228'; ctx.beginPath(); ctx.arc(-6, -38, 2.6, 0, Math.PI * 2); ctx.arc(6, -38, 2.6, 0, Math.PI * 2); ctx.fill();
-      if (glasses) { rBox(-13, -42, 11, 8, 2, 'rgba(255,255,255,0.25)', INK, 2); rBox(2, -42, 11, 8, 2, 'rgba(255,255,255,0.25)', INK, 2); }
-      ctx.beginPath(); ctx.arc(0, -45, 20, Math.PI * 0.9, Math.PI * 2.1); ctx.fillStyle = cap || hair; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.8; ctx.stroke();
-      if (label) { rBox(-20, -82, 40, 24, 7, label === '!' ? '#ffd454' : '#ffffff', INK, 2.5); pText(label, 0, -64, 15, '#23272d'); }
-      ctx.restore();
+      x = snap(x); y = snap(y + Math.sin(bob) * 2.5);
+      rBox(x - 18, y + 20, 36, 10, 0, 'rgba(0,0,0,0.35)', null, 0);
+      rBox(-14, 6, 11, 18, 0, '#253140', INK, 3); rBox(3, 6, 11, 18, 0, '#253140', INK, 3);
+      rBox(-17, -22, 34, 30, 0, shirt, INK, 3);
+      rBox(-16, -48, 32, 26, 0, '#e6ad87', INK, 3);
+      rBox(-10, -39, 5, 6, 0, '#12151b', null, 0); rBox(5, -39, 5, 6, 0, '#12151b', null, 0);
+      if (glasses) { rBox(-13, -42, 10, 9, 0, 'rgba(255,255,255,0.2)', INK, 2); rBox(3, -42, 10, 9, 0, 'rgba(255,255,255,0.2)', INK, 2); }
+      rBox(-18, -56, 36, 10, 0, cap || hair, INK, 3);
+      if (label) { rBox(-22, -84, 44, 22, 0, label === '!' ? '#ffd252' : '#ffffff', INK, 3); pText(label, 0, -68, 12, '#12151b'); }
     }
     function resolveCollisions() {
       for (const s of solids) {
@@ -331,21 +436,35 @@
     }
     function draw() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, vw, vh);
-      const scale = Math.min(vw / 1280, vh / 760), viewW = vw / scale, viewH = vh / scale;
-      if (!camReady) { cam.x = Math.max(0, Math.min(W - viewW, player.x - viewW / 2)); cam.y = Math.max(0, Math.min(H - viewH, player.y - viewH / 2)); camReady = true; }
-      else {
-        const deadX = viewW * 0.27, deadY = viewH * 0.27, sx = player.x - cam.x, sy = player.y - cam.y;
-        if (sx < deadX) cam.x -= deadX - sx; if (sx > viewW - deadX) cam.x += sx - (viewW - deadX);
-        if (sy < deadY) cam.y -= deadY - sy; if (sy > viewH - deadY) cam.y += sy - (viewH - deadY);
-        cam.x = Math.max(0, Math.min(Math.max(0, W - viewW), cam.x)); cam.y = Math.max(0, Math.min(Math.max(0, H - viewH), cam.y));
+      const scale = Math.max(0.55, Math.min(vw / 1100, vh / 720));
+      const viewW = vw / scale, viewH = vh / scale;
+      const maxCamX = Math.max(0, W - viewW);
+      const maxCamY = Math.max(0, H - viewH);
+      if (!camReady) {
+        cam.x = Math.max(0, Math.min(maxCamX, player.x - viewW / 2));
+        cam.y = Math.max(0, Math.min(maxCamY, player.y - viewH / 2));
+        camReady = true;
+      } else {
+        // Acompanha nas laterais e vertical quando chega perto das bordas sem sumir com o personagem
+        const edgeX = Math.min(viewW * 0.22, 180);
+        const edgeY = Math.min(viewH * 0.22, 140);
+        const sx = player.x - cam.x;
+        const sy = player.y - cam.y;
+        if (sx < edgeX) cam.x -= (edgeX - sx);
+        if (sx > viewW - edgeX) cam.x += (sx - (viewW - edgeX));
+        if (sy < edgeY) cam.y -= (edgeY - sy);
+        if (sy > viewH - edgeY) cam.y += (sy - (viewH - edgeY));
+        cam.x = Math.max(0, Math.min(maxCamX, cam.x));
+        cam.y = Math.max(0, Math.min(maxCamY, cam.y));
       }
-      ctx.scale(dpr * scale, dpr * scale); ctx.translate(-Math.round(cam.x), -Math.round(cam.y));
+      ctx.scale(dpr * scale, dpr * scale);
+      ctx.translate(-snap(cam.x), -snap(cam.y));
       drawFactory(); drawStations();
       const actors = [...npcs.map(n => ({ y: n.y, fn: () => drawCharacter(n.x, n.y, n.shirt, n.hair, n.cap, n.glasses, 0, n.badge) })), { y: player.y, fn: () => drawCharacter(player.x, player.y, '#e8dfd1', '#5c3622', false, false, player.walk, '') }];
       if (rhInspector.active) actors.push({ y: rhInspector.y, fn: () => drawCharacter(rhInspector.x, rhInspector.y, '#242933', '#1c1d21', false, true, 0.2, 'RH!') });
       actors.sort((a, b) => a.y - b.y); actors.forEach(a => a.fn());
       const near = nearestInteractable();
-      if (near) { rBox(near.obj.x - 84, near.obj.y + 38, 168, 22, 6, 'rgba(20,24,30,0.9)', '#ffd454', 2); pText(`[E] ${near.obj.name}`, near.obj.x, near.obj.y + 53, 11, '#ffe285'); }
+      if (near) { rBox(near.obj.x - 86, near.obj.y + 36, 172, 22, 0, 'rgba(18,22,29,0.94)', '#ffd252', 2); pText(`[E] ${near.obj.name}`, near.obj.x, near.obj.y + 51, 10, '#ffe285'); }
     }
     let lastTs = performance.now();
     function loop(ts) {
@@ -379,3 +498,5 @@
   </script>
 </body>
 </html>
+
+  
