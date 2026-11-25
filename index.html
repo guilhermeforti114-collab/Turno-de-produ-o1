@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -14,14 +13,11 @@
       touch-action: none;
     }
     canvas { display: block; width: 100%; height: 100%; }
-
     #hud { position: fixed; inset: 0; pointer-events: none; }
 
-    /* TOPO DISCRETO NOS CANTOS SEM TAMPAR A FÁBRICA */
     .cornerTopLeft {
       position: absolute; top: 8px; left: 8px;
-      display: flex; align-items: center; gap: 6px;
-      pointer-events: auto;
+      display: flex; align-items: center; gap: 6px; pointer-events: auto;
     }
     .pill {
       background: rgba(18, 22, 30, 0.86);
@@ -41,8 +37,7 @@
       background: rgba(18, 22, 30, 0.88);
       border: 2px solid #ffd454; border-radius: 10px;
       padding: 4px 9px; text-align: right;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.45);
-      pointer-events: auto;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.45); pointer-events: auto;
     }
     .goalTopRight b {
       display: block; font-size: 10.5px; color: #ffd86b;
@@ -52,12 +47,9 @@
       display: block; font-size: 9px; color: #d5dde8;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .timerLine {
-      margin-top: 3px; height: 4px; background: #293240; border-radius: 3px; overflow: hidden;
-    }
+    .timerLine { margin-top: 3px; height: 4px; background: #293240; border-radius: 3px; overflow: hidden; }
     .timerFill { height: 100%; width: 100%; background: linear-gradient(90deg, #4cd97b, #ffd454, #ff5449); }
 
-    /* SETAS DE MOVER E BOTÃO AÇÃO GRANDES E LIMPOS EMBAIXO */
     .arrows {
       position: absolute; left: 10px; bottom: 10px;
       display: grid;
@@ -88,7 +80,6 @@
     .actBtn span { font-size: 10.5px; opacity: 0.85; }
     .actBtn:active { transform: scale(0.95); }
 
-    /* DIÁLOGO COMPACTO */
     .sayBox {
       position: absolute; left: 50%; bottom: 158px; transform: translateX(-50%);
       width: min(480px, 90vw);
@@ -114,7 +105,6 @@
       .sayBox { bottom: 14px; width: min(420px, 48vw); }
     }
 
-    /* MENU INICIAL E GAME OVER */
     #startScreen, #gameOverScreen {
       position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 14px;
       background: radial-gradient(circle at 50% 35%, #2b3e54, #10151c 78%);
@@ -220,9 +210,7 @@
     }
     addEventListener('resize', resize); resize();
 
-    // Mundo compacto (1200x700) com câmera 100% fixa: tudo visível na tela sem sumir!
     const W = 1200, H = 700, INK = '#1e232a';
-
     const ROLES = [
       'Remover rebarbas da peça',
       'Injetar 3 peças e retirar as borras',
@@ -236,15 +224,14 @@
     let recDone = false, nonRecDone = false, packedCount = 0;
     let timer = 30; const timerMax = 30;
 
-    // Jogador no meio do corredor
     const player = { x: 600, y: 375, r: 14, speed: 220, walk: 0 };
     let keys = {}, particles = [];
     const rhBot = { active: false, x: 1090, y: 135, tx: 600, ty: 375 };
 
     const steps = [
       { title: '1. Fale com o Supervisor', desc: 'Aproxime-se do Supervisor no início do corredor.' },
-      { title: '2. Injete 3 peças (0/3) e tire rebarbas/borras', desc: 'Use qualquer Injetora (01, 02 ou 03) e leve a borra ao Tambor.' },
-      { title: '3. Triture borras e guarde no Reuso', desc: 'Tambor de Borras → Triturador → Recipiente Grande.' },
+      { title: '2. Injete 3 peças (0/3) e colete borras', desc: 'Use qualquer Injetora (01, 02 ou 03) 3 vezes.' },
+      { title: '3. Triture borras e guarde no Reuso', desc: 'Tambor de Borras -> Triturador -> Recipiente Grande.' },
       { title: '4. Separe resíduos (Reciclável e Não Rec.)', desc: 'Descarte nas duas lixeiras da coleta seletiva.' },
       { title: '5. Embale 10 peças (0/10)', desc: 'Embale na esteira ao final do corredor.' },
       { title: '6. Fale com o Técnico da Manutenção', desc: 'Confira sensores e travas com o Técnico.' },
@@ -252,372 +239,6 @@
       { title: '8. Conclua com o Supervisor', desc: 'Volte ao Supervisor para fechar o turno.' }
     ];
 
-    // Colisões limpas ao redor do corredor
-    const solids = [
-      { x: 0, y: 0, w: W, h: 120 },         // Parede superior baixa (sem bloco cinza enorme)
-      { x: 0, y: H - 28, w: W, h: 28 },     // Parede inferior
-      { x: 0, y: 0, w: 28, h: H },          // Parede esquerda
-      { x: W - 28, y: 0, w: 28, h: H },     // Parede direita
-      { x: 1040, y: 120, w: 120, h: 70 },   // Sala/porta RH
-      // Fileira superior do corredor: 3 Injetoras + 2 Tambores de Borras
-      { x: 190, y: 165, w: 170, h: 95 },    // Injetora 01
-      { x: 400, y: 165, w: 170, h: 95 },    // Injetora 02
-      { x: 610, y: 165, w: 170, h: 95 },    // Injetora 03
-      { x: 820, y: 175, w: 68, h: 78 },     // Tambor de Borras 01
-      { x: 910, y: 175, w: 68, h: 78 },     // Tambor de Borras 02
-      // Fileira inferior do corredor: Triturador, Reuso, Lixeiras, Esteira, Caminhão
-      { x: 160, y: 470, w: 125, h: 95 },    // Triturador
-      { x: 310, y: 475, w: 95, h: 90 },     // Recipiente Grande Reuso
-      { x: 445, y: 480, w: 65, h: 85 },     // Lixeira Reciclável
-      { x: 525, y: 480, w: 65, h: 85 },     // Lixeira Não Reciclável
-      { x: 635, y: 475, w: 220, h: 90 },    // Esteira de Embalagem
-      { x: 900, y: 465, w: 220, h: 105 }    // Caminhão Expedição
-    ];
-
-    const npcs = [
-      { id: 'sup', name: 'Supervisor Marcos', x: 115, y: 215, shirt: '#3768a3', hair: '#2b1b12', badge: '!' },
-      { id: 'tech', name: 'Técnico Paulo', x: 105, y: 520, shirt: '#3973ad', hair: '#2b1e16', badge: '🔧' },
-      { id: 'ship', name: 'Expedição Carla', x: 875, y: 445, shirt: '#3973ad', hair: '#3b2419', badge: '📦' }
-    ];
-
-    const stations = [
-      { id: 'inj1', name: 'INJETORA 01', x: 275, y: 275 },
-      { id: 'inj2', name: 'INJETORA 02', x: 485, y: 275 },
-      { id: 'inj3', name: 'INJETORA 03', x: 695, y: 275 },
-      { id: 'drum1', name: 'TAMBOR BORRAS 01', x: 854, y: 270 },
-      { id: 'drum2', name: 'TAMBOR BORRAS 02', x: 944, y: 270 },
-      { id: 'grinder', name: 'TRITURADOR', x: 222, y: 455 },
-      { id: 'reuse', name: 'RECIPIENTE REUSO', x: 357, y: 455 },
-      { id: 'recBin', name: 'LIXEIRA RECICLÁVEL', x: 477, y: 460 },
-      { id: 'nonRecBin', name: 'LIXEIRA NÃO REC.', x: 557, y: 460 },
-      { id: 'pack', name: 'ESTEIRA EMBALAGEM', x: 745, y: 455 },
-      { id: 'truck', name: 'CAMINHÃO XLP', x: 1010, y: 445 }
-    ];
-
-    function burst(x, y, color, n = 10) {
-      for (let i = 0; i < n; i++) {
-        const a = (Math.PI * 2 * i) / n + Math.random() * 0.4;
-        const s = 40 + Math.random() * 80;
-        particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0.5, max: 0.5, color });
-      }
-    }
-
-    function rollRole() {
-      assignedRole = ROLES[Math.floor(Math.random() * ROLES.length)];
-      document.getElementById('rolePicked').textContent = '★ ' + assignedRole;
-    }
-    rollRole();
-    document.getElementById('rerollBtn').onclick = rollRole;
-
-    document.querySelectorAll('.prodChip').forEach(b => {
-      b.onclick = () => {
-        document.querySelectorAll('.prodChip').forEach(c => c.classList.remove('on'));
-        b.classList.add('on');
-        selectedProduct = b.dataset.prod;
-        prodIdx = PRODUCTS.indexOf(selectedProduct);
-      };
-    });
-
-    function renderHearts() {
-      const box = document.getElementById('heartsBox');
-      box.innerHTML = '';
-      for (let i = 0; i < 3; i++) {
-        const s = document.createElement('span');
-        s.className = 'heart' + (i >= hearts ? ' lost' : '');
-        s.textContent = '❤️';
-        box.appendChild(s);
-      }
-    }
-
-    function updateHud() {
-      const cur = steps[Math.min(step, steps.length - 1)];
-      let title = cur.title;
-      if (step === 1) title = `2. Injete 3 peças (${injCount}/3) e leve borra ao tambor`;
-      if (step === 3) title = `4. Resíduos: Rec(${recDone ? 1 : 0}/1) NãoRec(${nonRecDone ? 1 : 0}/1)`;
-      if (step === 4) title = `5. Embale 10 peças (${packedCount}/10)`;
-      if (step >= steps.length) title = 'Turno concluído com sucesso!';
-
-      document.getElementById('goalTitle').textContent = title;
-      document.getElementById('goalDesc').textContent = step >= steps.length ? 'Parabéns! Produção finalizada.' : cur.desc;
-      document.getElementById('coins').textContent = String(coins).padStart(4, '0');
-    }
-
-    function say(speaker, text, isRh = false) {
-      sayOpen = true;
-      const box = document.getElementById('sayBox');
-      document.getElementById('saySpeaker').textContent = speaker;
-      document.getElementById('sayText').textContent = text;
-      box.classList.toggle('rh', isRh);
-      box.classList.add('show');
-    }
-
-    function closeSay() {
-      sayOpen = false;
-      document.getElementById('sayBox').classList.remove('show', 'rh');
-    }
-
-    function callRh(reason) {
-      if (gameOver) return;
-      hearts = Math.max(0, hearts - 1);
-      renderHearts();
-      coins = Math.max(0, coins - 15);
-      timer = timerMax;
-      burst(player.x, player.y - 15, '#ff594f', 14);
-      rhBot.active = true; rhBot.x = 1095; rhBot.y = 195; rhBot.tx = player.x + 36; rhBot.ty = player.y;
-      say('Diretoria / RH', `Sermão do RH: ${reason}! Você perdeu 1 coração (${hearts}/3 restantes).`, true);
-      if (hearts <= 0) {
-        gameOver = true;
-        document.getElementById('gameOverReason').textContent = `Você perdeu os 3 corações após: ${reason}.`;
-        document.getElementById('gameOverScreen').classList.remove('hidden');
-      }
-      updateHud();
-    }
-
-    function resetAll() {
-      hearts = 3; coins = 225; step = 0; injCount = 0; scrapHolding = false; scrapInDrum = false;
-      scrapGround = false; reuseCount = 0; recDone = false; nonRecDone = false; packedCount = 0;
-      timer = timerMax; particles = []; player.x = 600; player.y = 375; gameOver = false; rhBot.active = false;
-      closeSay(); renderHearts(); updateHud();
-    }
-
-    function nearest() {
-      let best = null, dMin = 95;
-      for (const n of npcs) { const d = Math.hypot(n.x - player.x, n.y - player.y); if (d < dMin) { dMin = d; best = { kind: 'npc', obj: n }; } }
-      for (const s of stations) { const d = Math.hypot(s.x - player.x, s.y - player.y); if (d < dMin) { dMin = d; best = { kind: 'st', obj: s }; } }
-      return best;
-    }
-
-    function act() {
-      if (!started || gameOver) return;
-      if (sayOpen) { closeSay(); return; }
-      const hit = nearest();
-      if (!hit) return;
-
-      if (hit.kind === 'npc') {
-        const n = hit.obj;
-        if (n.id === 'sup') {
-          if (step === 0) { step = 1; coins += 15; say(n.name, `Bem-vindo à XLP - SENAI! Função: "${assignedRole}". Vá às injetoras fazer 3 peças!`); }
-          else if (step === 7) { step = 8; coins += 60; say(n.name, 'Turno concluído com excelência! Toda a linha do corredor operou perfeitamente.'); }
-          else say(n.name, 'Mantenha o ritmo no corredor e não deixe estourar o tempo da injetora!');
-        } else if (n.id === 'tech') {
-          if (step === 5) { step = 6; coins += 20; say(n.name, 'Sensores e travas verificados! Agora confirme a carga no Caminhão XLP.'); }
-          else say(n.name, 'Manutenção preventiva das 3 injetoras e do triturador em dia.');
-        } else if (n.id === 'ship') {
-          if (step === 6 && packedCount >= 10) { step = 7; coins += 35; say(n.name, 'Lote embarcado no caminhão! Volte ao Supervisor para encerrar o turno.'); }
-          else say(n.name, 'Aguardando as 10 peças embaladas na esteira para carregar o caminhão.');
-        }
-        burst(n.x, n.y - 18, '#ffd859', 8);
-        updateHud(); return;
-      }
-
-      const s = hit.obj;
-      burst(s.x, s.y, '#7ce398', 10);
-
-      if (s.id.startsWith('inj')) {
-        if (step === 1) {
-          if (scrapHolding) { callRh('Deixou a borra na mão sem depositar no Tambor de Borras'); return; }
-          injCount = Math.min(3, injCount + 1);
-          scrapHolding = true;
-          timer = timerMax;
-          coins += 10;
-          prodIdx = (prodIdx + 1) % PRODUCTS.length;
-          selectedProduct = PRODUCTS[prodIdx];
-          if (injCount >= 3) { step = 2; say(s.name, '3 peças injetadas e rebarbas removidas! Leve a borra ao Tambor de Borras.'); }
-          else say(s.name, `Peça ${injCount}/3 injetada (${selectedProduct})! Deposite a borra em um Tambor de Borras.`);
-        } else { callRh('Operou a injetora fora da sequência do turno'); return; }
-      } else if (s.id.startsWith('drum')) {
-        if (step === 2 && scrapHolding && !scrapInDrum) {
-          scrapHolding = false; scrapInDrum = true; coins += 10;
-          say(s.name, 'Borra depositada no tambor! Agora leve ao Triturador (embaixo à esquerda).');
-        } else { callRh('Usou o tambor sem ter borra coletada da injetora'); return; }
-      } else if (s.id === 'grinder') {
-        if (step === 2 && scrapInDrum && !scrapGround) {
-          scrapInDrum = false; scrapGround = true; coins += 15;
-          say('Triturador', 'Borra triturada! Guarde no Recipiente Grande de Reuso ao lado.');
-        } else { callRh('Acionou o triturador sem borra do tambor'); return; }
-      } else if (s.id === 'reuse') {
-        if (step === 2 && scrapGround) {
-          scrapGround = false; reuseCount++; step = 3; coins += 20;
-          say('Recipiente de Reuso', 'Material triturado guardado para reuso! Agora separe os resíduos nas lixeiras.');
-        } else { callRh('Tentou guardar no reuso sem triturar a borra'); return; }
-      } else if (s.id === 'recBin') {
-        if (step === 3 && !recDone) {
-          recDone = true; coins += 12;
-          if (recDone && nonRecDone) { step = 4; say('Coleta Seletiva', 'Resíduos separados! Agora embale 10 peças na esteira.'); }
-          else say('Coleta Seletiva', 'Recicláveis descartados! Falta a lixeira de Não Recicláveis.');
-        } else { callRh('Descarte incorreto na lixeira reciclável'); return; }
-      } else if (s.id === 'nonRecBin') {
-        if (step === 3 && !nonRecDone) {
-          nonRecDone = true; coins += 12;
-          if (recDone && nonRecDone) { step = 4; say('Coleta Seletiva', 'Resíduos separados! Agora embale 10 peças na esteira.'); }
-          else say('Coleta Seletiva', 'Não recicláveis descartados! Falta a lixeira de Recicláveis.');
-        } else { callRh('Descarte incorreto na lixeira não reciclável'); return; }
-      } else if (s.id === 'pack') {
-        if (step === 4) {
-          packedCount = Math.min(10, packedCount + 2); coins += 6;
-          if (packedCount >= 10) { step = 5; say('Esteira de Embalagem', `10 unidades (${selectedProduct}) embaladas! Fale com o Técnico da Manutenção.`); }
-          else say('Esteira de Embalagem', `Embaladas ${packedCount}/10 (${selectedProduct}).`);
-        } else { callRh('Embalou peças antes da etapa correta'); return; }
-      } else if (s.id === 'truck') {
-        if (step === 6 && packedCount >= 10) {
-          step = 7; coins += 35;
-          say('Caminhão XLP', `Lote de ${selectedProduct} carregado! Volte ao Supervisor para concluir o turno.`);
-        } else { callRh('Tentou despachar no caminhão sem concluir as etapas anteriores'); return; }
-      }
-      updateHud();
-    }
-
-    function collide() {
-      for (const s of solids) {
-        const cx = Math.max(s.x, Math.min(player.x, s.x + s.w));
-        const cy = Math.max(s.y, Math.min(player.y, s.y + s.h));
-        const dx = player.x - cx, dy = player.y - cy, d2 = dx * dx + dy * dy;
-        if (d2 < player.r * player.r) {
-          const d = Math.sqrt(d2) || 0.01, ov = player.r - d;
-          player.x += (dx / d) * ov; player.y += (dy / d) * ov;
-        }
-      }
-    }
-
-    function rBox(x, y, w, h, r, fill, stroke = INK, lw = 2.5) {
-      ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
-      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
-    }
-
-    function labelTxt(t, x, y, sz = 11, col = '#fff') {
-      ctx.font = `900 ${sz}px "Trebuchet MS", sans-serif`;
-      ctx.textAlign = 'center'; ctx.strokeStyle = INK; ctx.lineWidth = 3;
-      ctx.strokeText(t, x, y); ctx.fillStyle = col; ctx.fillText(t, x, y);
-    }
-
-    function drawCorridor() {
-      // Piso de concreto texturizado do corredor inteiro
-      ctx.fillStyle = '#adb3ba'; ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 1.5;
-      for (let x = 28; x < W - 28; x += 80) { ctx.beginPath(); ctx.moveTo(x, 120); ctx.lineTo(x, H - 28); ctx.stroke(); }
-      for (let y = 120; y < H - 28; y += 72) { ctx.beginPath(); ctx.moveTo(28, y); ctx.lineTo(W - 28, y); ctx.stroke(); }
-
-      // Faixa central do corredor demarcada em amarelo
-      ctx.strokeStyle = '#e8b938'; ctx.lineWidth = 5;
-      ctx.strokeRect(65, 295, W - 130, 145);
-
-      // Parede superior baixa e limpa (sem paredão cinza gigante)
-      rBox(0, 0, W, 120, 0, '#6a7482', INK, 3);
-      rBox(450, 14, 300, 44, 6, '#e6e9ed', INK, 3);
-      labelTxt('XLP - SENAI', 600, 44, 24, '#c7342b');
-
-      // Portão azul central
-      rBox(500, 66, 200, 54, 4, '#3e6899', INK, 3);
-      rBox(500, 108, 200, 12, 0, '#e8b638', INK, 2);
-
-      // Sala RH à direita
-      rBox(1040, 120, 120, 70, 5, '#6e472b', INK, 3);
-      rBox(1046, 125, 108, 22, 4, '#fff3cf', INK, 2);
-      labelTxt('RH / DIRETORIA', 1100, 140, 9, '#362010');
-
-      // 3 Injetoras lado a lado na parte de cima do corredor
-      [
-        { x: 190, n: 'INJETORA 01' },
-        { x: 400, n: 'INJETORA 02' },
-        { x: 610, n: 'INJETORA 03' }
-      ].forEach(inj => {
-        rBox(inj.x, 165, 170, 95, 9, '#356ea8', INK, 3);
-        rBox(inj.x + 14, 177, 74, 42, 5, '#89b7e0', INK, 2);
-        rBox(inj.x + 98, 179, 58, 38, 5, '#2a313a', INK, 2);
-        ctx.fillStyle = '#55e082'; ctx.fillRect(inj.x + 106, 187, 8, 8);
-        ctx.fillStyle = '#ffd454'; ctx.fillRect(inj.x + 118, 187, 8, 8);
-        labelTxt(inj.n, inj.x + 85, 246, 11, '#ffd86b');
-      });
-
-      // 2 Tambores de Borras
-      [820, 910].forEach((bx, idx) => {
-        rBox(bx, 175, 68, 78, 10, '#3b6ea1', INK, 3);
-        rBox(bx - 4, 198, 76, 26, 4, '#ffd454', INK, 2);
-        labelTxt(`BORRA ${idx + 1}`, bx + 34, 215, 9.5, '#1d2229');
-      });
-
-      // Parte inferior do corredor: Triturador, Reuso, Lixeiras, Esteira, Caminhão
-      rBox(160, 470, 125, 95, 8, '#7d8794', INK, 3);
-      rBox(178, 484, 88, 38, 5, '#373e47', INK, 2);
-      labelTxt('TRITURADOR', 222, 550, 10, '#ffd86b');
-
-      rBox(310, 475, 95, 90, 9, '#4c7862', INK, 3);
-      labelTxt('REUSO', 357, 515, 11, '#fff');
-      labelTxt(`(${reuseCount})`, 357, 534, 11, '#ffd86b');
-
-      rBox(445, 480, 65, 85, 8, '#3e994a', INK, 3);
-      labelTxt('♻', 477, 522, 20, '#fff');
-      labelTxt('REC.', 477, 552, 9, '#fff');
-
-      rBox(525, 480, 65, 85, 8, '#c93c34', INK, 3);
-      labelTxt('🗑', 557, 522, 18, '#fff');
-      labelTxt('NÃO REC', 557, 552, 8.5, '#fff');
-
-      rBox(635, 475, 220, 90, 8, '#505963', INK, 3);
-      rBox(655, 456, 36, 26, 4, '#cfa165', INK, 2);
-      rBox(715, 456, 36, 26, 4, '#cfa165', INK, 2);
-      labelTxt(`EMBALA (${packedCount}/10)`, 745, 530, 11, '#ffd86b');
-
-      rBox(900, 465, 220, 105, 9, '#e6e9ed', INK, 3);
-      rBox(1068, 476, 46, 84, 5, '#3870ab', INK, 2.5);
-      labelTxt('CAMINHÃO XLP', 985, 524, 12, '#1d2229');
-    }
-
-    function drawChar(x, y, shirt, hair, bob = 0, badge = '') {
-      ctx.save();
-      ctx.translate(x, y + Math.sin(bob) * 2.2);
-      ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath(); ctx.ellipse(0, 20, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
-
-      rBox(-10, 4, 8, 13, 3, '#29384a', INK, 2);
-
-  <script>
-  (() => {
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    let vw = innerWidth, vh = innerHeight, dpr = Math.min(devicePixelRatio || 1, 2);
-
-    function resize() {
-      vw = innerWidth; vh = innerHeight;
-      canvas.width = vw * dpr; canvas.height = vh * dpr;
-      canvas.style.width = vw + 'px'; canvas.style.height = vh + 'px';
-    }
-    addEventListener('resize', resize); resize();
-
-    // Mundo compacto (1200x700) com câmera 100% fixa: tudo visível na tela sem sumir!
-    const W = 1200, H = 700, INK = '#1e232a';
-
-    const ROLES = [
-      'Remover rebarbas da peça',
-      'Injetar 3 peças e retirar as borras',
-      'Triturar as borras e guardar no recipiente grande para reutilizar'
-    ];
-    const PRODUCTS = ['Balde de plástico', 'Copos de plástico', 'Garrafas de plástico'];
-
-    let assignedRole = ROLES[0], selectedProduct = PRODUCTS[0], prodIdx = 0;
-    let started = false, gameOver = false, hearts = 3, coins = 225, step = 0, sayOpen = false;
-    let injCount = 0, scrapHolding = false, scrapInDrum = false, scrapGround = false, reuseCount = 0;
-    let recDone = false, nonRecDone = false, packedCount = 0;
-    let timer = 30; const timerMax = 30;
-
-    // Jogador no meio do corredor
-    const player = { x: 600, y: 375, r: 14, speed: 220, walk: 0 };
-    let keys = {}, particles = [];
-    const rhBot = { active: false, x: 1090, y: 135, tx: 600, ty: 375 };
-
-    const steps = [
-      { title: '1. Fale com o Supervisor', desc: 'Aproxime-se do Supervisor no início do corredor.' },
-      { title: '2. Injete 3 peças (0/3) e tire rebarbas/borras', desc: 'Use qualquer Injetora (01, 02 ou 03) e leve a borra ao Tambor.' },
-      { title: '3. Triture borras e guarde no Reuso', desc: 'Tambor de Borras → Triturador → Recipiente Grande.' },
-      { title: '4. Separe resíduos (Reciclável e Não Rec.)', desc: 'Descarte nas duas lixeiras da coleta seletiva.' },
-      { title: '5. Embale 10 peças (0/10)', desc: 'Embale na esteira ao final do corredor.' },
-      { title: '6. Fale com o Técnico da Manutenção', desc: 'Confira sensores e travas com o Técnico.' },
-      { title: '7. Despache no Caminhão XLP', desc: 'Confirme a carga no caminhão de expedição.' },
-      { title: '8. Conclua com o Supervisor', desc: 'Volte ao Supervisor para fechar o turno.' }
-    ];
-
-    // Colisões limpas ao redor do corredor
     const solids = [
       { x: 0, y: 0, w: W, h: 120 },
       { x: 0, y: H - 28, w: W, h: 28 },
@@ -870,61 +491,234 @@
       rBox(450, 14, 300, 44, 6, '#e6e9ed', INK, 3);
       labelTxt('XLP - SENAI', 600, 44, 24, '#c7342b');
 
-      rBox(500,66, 200, 54, 4, '#3e6899', INK, 3);
-rBox(500, 108, 200, 12, 0, '#e8b638', INK, 2);
-rBox(1040, 120, 120, 70, 5, '#6e472b', INK, 3);
-rBox(1046, 125, 108, 22, 4, '#fff3cf', INK, 2);
-labelTxt('RH / DIRETORIA', 1100, 140, 9, '#362010');
-[
-{ x: 190, n: 'INJETORA 01' },
-{ x: 400, n: 'INJETORA 02' },
-{ x: 610, n: 'INJETORA 03' }
-].forEach(inj => {
-rBox(inj.x, 165, 170, 95, 9, '#356ea8', INK, 3);
-rBox(inj.x + 14, 177, 74, 42, 5, '#89b7e0', INK, 2);
-rBox(inj.x + 98, 179, 58, 38, 5, '#2a313a', INK, 2);
-ctx.fillStyle = '#55e082'; ctx.fillRect(inj.x + 106, 187, 8, 8);
-ctx.fillStyle = '#ffd454'; ctx.fillRect(inj.x + 118, 187, 8, 8);
-labelTxt(inj.n, inj.x + 85, 246, 11, '#ffd86b');
-});
-[820, 910].forEach((bx, idx) => {
-rBox(bx, 175, 68, 78, 10, '#3b6ea1', INK, 3);
-rBox(bx - 4, 198, 76, 26, 4, '#ffd454', INK, 2);
-labelTxt(BORRA ${idx + 1}, bx + 34, 215, 9.5, '#1d2229');
-});
-rBox(160, 470, 125, 95, 8, '#7d8794', INK, 3);
-rBox(178, 484, 88, 38, 5, '#373e47', INK, 2);
-labelTxt('TRITURADOR', 222, 550, 10, '#ffd86b');
-rBox(310, 475, 95, 90, 9, '#4c7862', INK, 3);
-labelTxt('REUSO', 357, 515, 11, '#fff');
-labelTxt((${reuseCount}), 357, 534, 11, '#ffd86b');
-rBox(445, 480, 65, 85, 8, '#3e994a', INK, 3);
-labelTxt('♻', 477, 522, 20, '#fff');
-labelTxt('REC.', 477, 552, 9, '#fff');
-rBox(525, 480, 65, 85, 8, '#c93c34', INK, 3);
-labelTxt('🗑', 557, 522, 18, '#fff');
-labelTxt('NÃO REC', 557, 552, 8.5, '#fff');
-rBox(635, 475, 220, 90, 8, '#505963', INK, 3);
-rBox(655, 456, 36, 26, 4, '#cfa165', INK, 2);
-rBox(715, 456, 36, 26, 4, '#cfa165', INK, 2);
-labelTxt(EMBALA (${packedCount}/10), 745, 530, 11, '#ffd86b');
-rBox(900, 465, 220, 105, 9, '#e6e9ed', INK, 3);
-rBox(1068, 476, 46, 84, 5, '#3870ab', INK, 2.5);
-labelTxt('CAMINHÃO XLP', 985, 524, 12, '#1d2229');
-}
-function drawChar(x, y, shirt, hair, bob = 0, badge = '') {
-ctx.save();
-ctx.translate(x, y + Math.sin(bob) * 2.2);
-ctx.fillStyle = 'rgba(0,0,0,0.28)';
-ctx.beginPath(); ctx.ellipse(0, 20, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
-rBox(-10, 4, 8, 13, 3, '#29384a', INK, 2);
-rBox(2, 4, 8, 13, 3, '#29384a', INK, 2);
-rBox(-12, -16, 24, 22, 6, shirt, INK, 2.2);
-ctx.beginPath(); ctx.arc(0, -28, 14, 0, Math.PI * 2);
-ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.stroke();
-ctx.fillStyle = '#1c2026';
-ctx.beginPath(); ctx.arc(-4.5, -27, 2, 0, Math.PI * 2); ctx.arc(4.5, -27, 2, 0, Math.PI * 2); ctx.fill();
-ctx.beginPath(); ctx.arc(0, -33, 15, Math.PI * 0.9, Math.PI * 2.1);
+      rBox(500, 66, 200, 54, 4, '#3e6899', INK, 3);
+      rBox(500, 108, 200, 12, 0, '#e8b638', INK, 2);
+
+      rBox(1040, 120, 120, 70, 5, '#6e472b', INK, 3);
+      rBox(1046, 125, 108, 22, 4, '#fff3cf', INK, 2);
+      labelTxt('RH / DIRETORIA', 1100, 140, 9, '#362010');
+
+      [
+        { x: 190, n: 'INJETORA 01' },
+        { x: 400, n: 'INJETORA 02' },
+        { x: 610, n: 'INJETORA 03' }
+      ].forEach(inj => {
+        rBox(inj.x, 165, 170, 95, 9, '#356ea8', INK, 3);
+        rBox(inj.x + 14, 177, 74, 42, 5, '#89b7e0', INK, 2);
+        rBox(inj.x + 98, 179, 58, 38, 5, '#2a313a', INK, 2);
+        ctx.fillStyle = '#55e082'; ctx.fillRect(inj.x + 106, 187, 8, 8);
+        ctx.fillStyle = '#ffd454'; ctx.fillRect(inj.x + 118, 187, 8, 8);
+        labelTxt(inj.n, inj.x + 85, 246, 11, '#ffd86b');
+      });
+
+      [820, 910].forEach((bx, idx) => {
+        rBox(bx, 175, 68, 78, 10, '#3b6ea1', INK, 3);
+        rBox(bx - 4, 198, 76, 26, 4, '#ffd454', INK, 2);
+        labelTxt(`BORRA ${idx + 1}`, bx + 34, 215, 9.5, '#1d2229');
+      });
+
+      rBox(160, 470, 125, 95, 8, '#7d8794', INK, 3);
+      rBox(178, 484, 88, 38, 5, '#373e47', INK, 2);
+      labelTxt('TRITURADOR', 222, 550, 10, '#ffd86b');
+
+      rBox(310, 475, 95, 90, 9, '#4c7862', INK, 3);
+      labelTxt('REUSO', 357, 515, 11, '#fff');
+      labelTxt(`(${reuseCount})`, 357, 534, 11, '#ffd86b');
+
+      rBox(445, 480, 65, 85, 8, '#3e994a', INK, 3);
+      labelTxt('♻', 477, 522, 20, '#fff');
+      labelTxt('REC.', 477, 552, 9, '#fff');
+
+      rBox(525, 480, 65, 85, 8, '#c93c34', INK, 3);
+      labelTxt('🗑', 557, 522, 18, '#fff');
+      labelTxt('NÃO REC', 557, 552, 8.5, '#fff');
+
+      rBox(635, 475, 220, 90, 8, '#505963', INK, 3);
+      rBox(655, 456, 36, 26, 4, '#cfa165', INK, 2);
+      rBox(715, 456, 36, 26, 4, '#cfa165', INK, 2);
+      labelTxt(`EMBALA (${packedCount}/10)`, 745, 530, 11, '#ffd86b');
+
+      rBox(900, 465, 220, 105, 9, '#e6e9ed', INK, 3);
+      rBox(1068, 476, 46, 84, 5, '#3870ab', INK, 2.5);
+      labelTxt('CAMINHÃO XLP', 985, 524, 12, '#1d2229');
+    }
+
+    function drawChar(x, y, shirt, hair, bob = 0, badge = '') {
+      ctx.save();
+      ctx.translate(x, y + Math.sin(bob) * 2.2);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(0, 20, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
+
+      rBox(-10, 4, 8, 13, 3, '#29384a', INK, 2);
+      rBox(2, 4, 8, 13, 3, '#29384a', INK, 2);
+      rBox(-12, -16, 24, 22, 6, shirt, INK, 2.2);
+
+      ctx.beginPath(); ctx.arc(0, -28, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.stroke();
+
+      ctx.fillStyle = '#1c2026';
+      ctx.beginPath(); ctx.arc(-4.5, -27, 2, 0, Math.PI * 2); ctx.arc(4.5, -27, 2, 0, Math.PI * 2); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(0, -33, 15, Math.PI * 0.9, Math.PI * 2.1);
+      ctx.fillStyle = hair; ctx.fill(); ctx.stroke();
+
+      if (badge) {
+        rBox(-15, -60, 30, 18, 5, badge === '!' ? '#ffd859' : '#ffffff', INK, 2);
+        labelTxt(badge, 0, -47, 10.5, '#1d2229');
+      }
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = '#141920';
+      ctx.fillRect(0, 0, vw, vh);
+
+      const scale = Math.min(vw / W, vh / H);
+      const offX = (vw - W * scale) / 2;
+      const offY = (vh - H * scale) / 2;
+
+      ctx.translate(offX, offY);
+      ctx.scale(scale, scale);
+
+      drawCorridor();
+
+      for (const p of particles) {
+        ctx.globalAlpha = Math.max(0, p.life / p.max);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      const list = [
+        ...npcs.map(n => ({ y: n.y, fn: () => drawChar(n.x, n.y, n.shirt, n.hair, 0, n.badge) })),
+        { y: player.y, fn: () => drawChar(player.x, player.y, '#ede4d5', '#5e3722', player.walk, '') }
+      ];
+      if (rhBot.active) list.push({ y: rhBot.y, fn: () => drawChar(rhBot.x, rhBot.y, '#242933', '#1c1d21', 0.2, 'RH!') });
+      list.sort((a, b) => a.y - b.y);
+      list.forEach(a => a.fn());
+
+      const hit = nearest();
+      if (hit) {
+        rBox(hit.obj.x - 74, hit.obj.y + 24, 148, 19, 5, 'rgba(18,22,30,0.92)', '#ffd859', 2);
+        labelTxt(`[AÇÃO] ${hit.obj.name}`, hit.obj.x, hit.obj.y + 37, 9.5, '#ffe48a');
+      }
+    }
+
+    let prev = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.05, (now - prev) / 1000);
+      prev = now;
+
+      if (started && !gameOver) {
+        let dx = 0, dy = 0;
+        if (keys.left || keys.arrowleft || keys.a) dx--;
+        if (keys.right || keys.arrowright || keys.d) dx++;
+        if (keys.up || keys.arrowup || keys.w) dy--;
+        if (keys.down || keys.arrowdown || keys.s) dy++;
+        if (dx || dy) {
+          const l = Math.hypot(dx, dy) || 1;
+          player.x += (dx / l) * player.speed * dt;
+          player.y += (dy / l) * player.speed * dt;
+          collide();
+          player.walk += dt * 12;
+        } else player.walk = 0;
+
+        if (rhBot.active) {
+          const a = Math.atan2(rhBot.ty - rhBot.y, rhBot.tx - rhBot.x);
+          const d = Math.hypot(rhBot.tx - rhBot.x, rhBot.ty - rhBot.y);
+          if (d > 8) { rhBot.x += Math.cos(a) * 280 * dt; rhBot.y += Math.sin(a) * 280 * dt; }
+        }
+
+        if (!sayOpen && step >= 1 && step <= 4) {
+          timer -= dt;
+          if (timer <= 0) callRh('Estouro de tempo no ciclo da injetora');
+        }
+        document.getElementById('timerFill').style.width = Math.max(0, (timer / timerMax) * 100) + '%';
+      }
+
+      particles = particles.filter(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; return p.life > 0; });
+      draw();      ctx.fillStyle = '#adb3ba'; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#8b9199'; ctx.lineWidth = 1.5;
+      for (let x = 28; x < W - 28; x += 80) { ctx.beginPath(); ctx.moveTo(x, 120); ctx.lineTo(x, H - 28); ctx.stroke(); }
+      for (let y = 120; y < H - 28; y += 72) { ctx.beginPath(); ctx.moveTo(28, y); ctx.lineTo(W - 28, y); ctx.stroke(); }
+
+      ctx.strokeStyle = '#e8b938'; ctx.lineWidth = 5;
+      ctx.strokeRect(65, 295, W - 130, 145);
+
+      rBox(0, 0, W, 120, 0, '#6a7482', INK, 3);
+      rBox(450, 14, 300, 44, 6, '#e6e9ed', INK, 3);
+      labelTxt('XLP - SENAI', 600, 44, 24, '#c7342b');
+
+      rBox(500, 66, 200, 54, 4, '#3e6899', INK, 3);
+      rBox(500, 108, 200, 12, 0, '#e8b638', INK, 2);
+
+      rBox(1040, 120, 120, 70, 5, '#6e472b', INK, 3);
+      rBox(1046, 125, 108, 22, 4, '#fff3cf', INK, 2);
+      labelTxt('RH / DIRETORIA', 1100, 140, 9, '#362010');
+
+      [
+        { x: 190, n: 'INJETORA 01' },
+        { x: 400, n: 'INJETORA 02' },
+        { x: 610, n: 'INJETORA 03' }
+      ].forEach(inj => {
+        rBox(inj.x, 165, 170, 95, 9, '#356ea8', INK, 3);
+        rBox(inj.x + 14, 177, 74, 42, 5, '#89b7e0', INK, 2);
+        rBox(inj.x + 98, 179, 58, 38, 5, '#2a313a', INK, 2);
+        ctx.fillStyle = '#55e082'; ctx.fillRect(inj.x + 106, 187, 8, 8);
+        ctx.fillStyle = '#ffd454'; ctx.fillRect(inj.x + 118, 187, 8, 8);
+        labelTxt(inj.n, inj.x + 85, 246, 11, '#ffd86b');
+      });
+
+      [820, 910].forEach((bx, idx) => {
+        rBox(bx, 175, 68, 78, 10, '#3b6ea1', INK, 3);
+        rBox(bx - 4, 198, 76, 26, 4, '#ffd454', INK, 2);
+        labelTxt(`BORRA ${idx + 1}`, bx + 34, 215, 9.5, '#1d2229');
+      });
+
+      rBox(160, 470, 125, 95, 8, '#7d8794', INK, 3);
+      rBox(178, 484, 88, 38, 5, '#373e47', INK, 2);
+      labelTxt('TRITURADOR', 222, 550, 10, '#ffd86b');
+
+      rBox(310, 475, 95, 90, 9, '#4c7862', INK, 3);
+      labelTxt('REUSO', 357, 515, 11, '#fff');
+      labelTxt(`(${reuseCount})`, 357, 534, 11, '#ffd86b');
+
+      rBox(445, 480, 65, 85, 8, '#3e994a', INK, 3);
+      labelTxt('♻', 477, 522, 20, '#fff');
+      labelTxt('REC.', 477, 552, 9, '#fff');
+
+      rBox(525, 480, 65, 85, 8, '#c93c34', INK, 3);
+      labelTxt('🗑', 557, 522, 18, '#fff');
+      labelTxt('NÃO REC', 557, 552, 8.5, '#fff');
+
+      rBox(635, 475, 220, 90, 8, '#505963', INK, 3);
+      rBox(655, 456, 36, 26, 4, '#cfa165', INK, 2);
+      rBox(715, 456, 36, 26, 4, '#cfa165', INK, 2);
+      labelTxt(`EMBALA (${packedCount}/10)`, 745, 530, 11, '#ffd86b');
+
+      rBox(900, 465, 220, 105, 9, '#e6e9ed', INK, 3);
+      rBox(1068, 476, 46, 84, 5, '#3870ab', INK, 2.5);
+      labelTxt('CAMINHÃO XLP', 985, 524, 12, '#1d2229');
+    }
+
+    function drawChar(x, y, shirt, hair, bob = 0, badge = '') {
+      ctx.save();
+      ctx.translate(x, y + Math.sin(bob) * 2.2);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(0, 20, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
+
+      rBox(-10, 4, 8, 13, 3, '#29384a', INK, 2);
+      rBox(2, 4, 8, 13, 3, '#29384a', INK, 2);
+      rBox(-12, -16, 24, 22, 6, shirt, INK, 2.2);
+
+      ctx.beginPath(); ctx.arc(0, -28, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#e8b08a'; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.stroke();
+
+      ctx.fillStyle = '#1c2026';
+      ctx.beginPath(); ctx.arc(-4.5, -27, 2, 0, Math.PI * 2); ctx.arc(4.5, -27, 2, 0, Math.PI * 2); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(0, -33, 15, Math.PI * 0.9, Math.PI * 2.1);
 ctx.fillStyle = hair; ctx.fill(); ctx.stroke();
 if (badge) {
 rBox(-15, -60, 30, 18, 5, badge === '!' ? '#ffd859' : '#ffffff', INK, 2);
@@ -1024,3 +818,6 @@ renderHearts(); updateHud(); requestAnimationFrame(loop);
 </script>
 </body>
 </html>
+           
+      
+  
